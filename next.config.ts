@@ -3,17 +3,14 @@ import type { NextConfig } from 'next'
 const nextConfig: NextConfig = {
   async redirects() {
     return [
-      {
-        source: '/og.png',
-        destination: '/og2.png',
-        permanent: true,
-      },
+      { source: '/og.png', destination: '/og3.png', permanent: true },
+      { source: '/og2.png', destination: '/og3.png', permanent: true },
     ]
   },
   async headers() {
     return [
       {
-        source: '/og2.png',
+        source: '/og3.png',
         headers: [{ key: 'Content-Type', value: 'image/png' }],
       },
       {
