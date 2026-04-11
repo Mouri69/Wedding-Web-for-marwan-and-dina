@@ -64,7 +64,7 @@ function FloraRose({ size = 36, className, style }: { size?: number; className?:
       style={{ flexShrink: 0, ...style }}
     >
       <defs>
-        <linearGradient id={`fr-${uid}`} x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id={`fr-${uid}`} x1="20%" y1="20  %" x2="100%" y2="100%">
           <stop offset="0%" stopColor="rgba(255, 220, 232, 0.95)" />
           <stop offset="100%" stopColor="rgba(200, 100, 140, 0.9)" />
         </linearGradient>
@@ -135,10 +135,127 @@ function FloraPair({ className }: { className?: string }) {
   )
 }
 
+const vineStroke = 'rgba(255, 198, 216, 0.62)'
+const vineStrokeSoft = 'rgba(255, 198, 216, 0.38)'
+const leafFill = 'rgba(130, 185, 140, 0.42)'
+const leafStroke = 'rgba(175, 220, 180, 0.55)'
+
+/** Top-left corner art; other corners mirror via CSS scale on the wrapper */
+function CornerVineSvg() {
+  return (
+    <svg width="100%" height="100%" viewBox="0 0 96 96" fill="none" aria-hidden>
+      <path
+        d="M4 6 C 22 4, 34 18, 28 32 C 24 44, 10 50, 14 64 C 18 76, 32 82, 26 94 M 18 22 Q 32 18 38 32 M 8 38 Q 20 44 16 58"
+        stroke={vineStroke}
+        strokeWidth="1.35"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+      <ellipse cx="34" cy="24" rx="7" ry="4" transform="rotate(-35 34 24)" fill={leafFill} stroke={leafStroke} strokeWidth="0.65" />
+      <ellipse cx="22" cy="48" rx="6" ry="3.5" transform="rotate(15 22 48)" fill={leafFill} stroke={leafStroke} strokeWidth="0.65" />
+      <ellipse cx="30" cy="72" rx="5" ry="3" transform="rotate(-20 30 72)" fill={leafFill} stroke={leafStroke} strokeWidth="0.55" opacity={0.85} />
+    </svg>
+  )
+}
+
+function CornerVine({ flipX, flipY, style }: { flipX?: boolean; flipY?: boolean; style?: React.CSSProperties }) {
+  return (
+    <div className="inv-flora inv-flora--vine-corner" style={{ width: 104, height: 104, ...style }}>
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          transform: `scaleX(${flipX ? -1 : 1}) scaleY(${flipY ? -1 : 1})`,
+          transformOrigin: 'center center',
+        }}
+      >
+        <CornerVineSvg />
+      </div>
+    </div>
+  )
+}
+
 function InvPanelFlora() {
   const glow = { filter: 'drop-shadow(0 0 10px rgba(255, 190, 210, 0.35))' } as React.CSSProperties
   return (
     <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', borderRadius: 44 }}>
+      {/* Edge vines (inset so corners stay clear for corner flourishes) */}
+      <svg
+        className="inv-flora inv-flora--vine-edges"
+        style={{ position: 'absolute', left: 64, right: 64, top: 16, height: 40 }}
+        viewBox="0 0 520 36"
+        preserveAspectRatio="none"
+        fill="none"
+        aria-hidden
+      >
+        <path
+          d="M0 20 Q 65 10, 130 18 T 260 16 T 390 19 T 520 17"
+          stroke={vineStrokeSoft}
+          strokeWidth="1.25"
+          strokeLinecap="round"
+          strokeDasharray="5 11"
+        />
+        <path d="M0 24 Q 130 30, 260 22 Q 390 28, 520 23" stroke={vineStroke} strokeWidth="0.9" strokeLinecap="round" opacity={0.55} />
+      </svg>
+      <svg
+        className="inv-flora inv-flora--vine-edges"
+        style={{ position: 'absolute', left: 64, right: 64, bottom: 16, height: 40 }}
+        viewBox="0 0 520 36"
+        preserveAspectRatio="none"
+        fill="none"
+        aria-hidden
+      >
+        <path
+          d="M520 16 Q 455 26, 390 18 T 260 20 T 130 17 T 0 19"
+          stroke={vineStrokeSoft}
+          strokeWidth="1.25"
+          strokeLinecap="round"
+          strokeDasharray="5 11"
+        />
+        <path d="M520 12 Q 390 6, 260 14 Q 130 8, 0 13" stroke={vineStroke} strokeWidth="0.9" strokeLinecap="round" opacity={0.55} />
+      </svg>
+      <svg
+        className="inv-flora inv-flora--vine-edges"
+        style={{ position: 'absolute', left: 12, top: 112, bottom: 112, width: 44 }}
+        viewBox="0 0 40 400"
+        preserveAspectRatio="none"
+        fill="none"
+        aria-hidden
+      >
+        <path
+          d="M22 0 Q 14 80, 24 160 T 18 320 T 22 400"
+          stroke={vineStrokeSoft}
+          strokeWidth="1.2"
+          strokeLinecap="round"
+          strokeDasharray="4 12"
+        />
+        <path d="M16 0 Q 26 100, 14 200 Q 28 300, 16 400" stroke={vineStroke} strokeWidth="0.85" strokeLinecap="round" opacity={0.5} />
+      </svg>
+      <svg
+        className="inv-flora inv-flora--vine-edges"
+        style={{ position: 'absolute', right: 12, top: 112, bottom: 112, width: 44 }}
+        viewBox="0 0 40 400"
+        preserveAspectRatio="none"
+        fill="none"
+        aria-hidden
+      >
+        <path
+          d="M18 0 Q 26 80, 16 160 T 22 320 T 18 400"
+          stroke={vineStrokeSoft}
+          strokeWidth="1.2"
+          strokeLinecap="round"
+          strokeDasharray="4 12"
+        />
+        <path d="M24 0 Q 14 100, 26 200 Q 12 300, 24 400" stroke={vineStroke} strokeWidth="0.85" strokeLinecap="round" opacity={0.5} />
+      </svg>
+
+      {/* Corner vines */}
+      <CornerVine style={{ position: 'absolute', top: 2, left: 2, opacity: 0.88 }} />
+      <CornerVine flipX style={{ position: 'absolute', top: 2, right: 2, opacity: 0.88 }} />
+      <CornerVine flipY style={{ position: 'absolute', bottom: 2, left: 2, opacity: 0.88 }} />
+      <CornerVine flipX flipY style={{ position: 'absolute', bottom: 2, right: 2, opacity: 0.88 }} />
+
       <div className="inv-flora inv-flora--a" style={{ position: 'absolute', top: 8, right: 4, opacity: 0.95, ...glow }}>
         <FloraRose size={80} />
       </div>
@@ -982,13 +1099,21 @@ export default function Home() {
         .inv-flora--d { animation: invFloraSwayAlt 7.5s ease-in-out infinite; animation-delay: -1s; }
         .inv-flora--e { animation: invFloraLine 14s ease-in-out infinite; }
         .inv-flora--divider { animation: invDividerBreathe 5s ease-in-out infinite; }
+        @keyframes invVineEdgePulse {
+          0%, 100% { opacity: 0.68; }
+          50% { opacity: 0.88; }
+        }
+        .inv-flora--vine-edges { animation: invVineEdgePulse 14s ease-in-out infinite; opacity: 0.78; }
+        .inv-flora--vine-corner { animation: invFloraSwayAlt 13s ease-in-out infinite; animation-delay: -2.5s; }
         @media (prefers-reduced-motion: reduce) {
           .reveal-section { opacity: 1 !important; transform: none !important; transition: none !important; }
           .gallery-tile { transition: none !important; }
           .gallery-tile:hover { transform: none !important; }
-          .inv-flora--a, .inv-flora--b, .inv-flora--c, .inv-flora--d, .inv-flora--e, .inv-flora--divider {
+          .inv-flora--a, .inv-flora--b, .inv-flora--c, .inv-flora--d, .inv-flora--e, .inv-flora--divider,
+          .inv-flora--vine-edges, .inv-flora--vine-corner {
             animation: none !important;
           }
+          .inv-flora--vine-edges { opacity: 0.8 !important; }
         }
       `}</style>
     </div>
