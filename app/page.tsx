@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef, useState, useCallback, Fragment } from 'react'
+import { useEffect, useRef, useState, useCallback, Fragment, useId } from 'react'
 
 /* ── Types ── */
 interface Message { id: number; name: string; message: string }
@@ -49,7 +49,134 @@ function RevealSection({ children, delay = 0 }: { children: React.ReactNode; del
   )
 }
 
-function FlowDivider() {
+type FloraAccent = 'rose' | 'sprig' | 'pair' | 'sparkle'
+
+function FloraRose({ size = 36, className, style }: { size?: number; className?: string; style?: React.CSSProperties }) {
+  const uid = useId().replace(/:/g, '')
+  return (
+    <svg
+      className={className}
+      width={size}
+      height={size}
+      viewBox="0 0 56 56"
+      fill="none"
+      aria-hidden
+      style={{ flexShrink: 0, ...style }}
+    >
+      <defs>
+        <linearGradient id={`fr-${uid}`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="rgba(245, 200, 215, 0.85)" />
+          <stop offset="100%" stopColor="rgba(160, 70, 100, 0.5)" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M28 10c4 2 7 6 6 11 2-1 5 0 6 3 1 4-2 8-6 9 1 3-1 7-5 8-4 1-8-2-9-6-3 2-7 0-9-3-2-4 1-9 6-10-1-5 3-10 8-11 1-3 5-4 8-2z"
+        stroke={`url(#fr-${uid})`}
+        strokeWidth="0.9"
+        fill="rgba(200, 100, 130, 0.08)"
+      />
+      <ellipse cx="28" cy="22" rx="5" ry="4" transform="rotate(-12 28 22)" fill="rgba(232, 170, 190, 0.15)" stroke="rgba(232, 180, 200, 0.35)" strokeWidth="0.6" />
+      <path d="M28 26v14M24 34c-4 2-6 6-5 10M32 34c4 2 6 6 5 10" stroke="rgba(120, 60, 80, 0.35)" strokeWidth="0.75" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function FloraSprig({ size = 40, flip, className, style }: { size?: number; flip?: boolean; className?: string; style?: React.CSSProperties }) {
+  return (
+    <svg
+      className={className}
+      width={size}
+      height={size}
+      viewBox="0 0 48 48"
+      fill="none"
+      aria-hidden
+      style={{
+        flexShrink: 0,
+        ...style,
+        transform: [flip ? 'scaleX(-1)' : '', style?.transform].filter(Boolean).join(' ') || undefined,
+      }}
+    >
+      <path
+        d="M8 40 Q 22 28, 24 12 Q 26 26, 38 36"
+        stroke="rgba(90, 120, 85, 0.35)"
+        strokeWidth="0.85"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <path
+        d="M18 30 Q 14 24 10 26 Q 14 28 18 30"
+        fill="rgba(100, 130, 95, 0.2)"
+        stroke="rgba(120, 150, 110, 0.4)"
+        strokeWidth="0.55"
+      />
+      <path
+        d="M26 22 Q 30 16 34 20 Q 30 24 26 22"
+        fill="rgba(100, 130, 95, 0.18)"
+        stroke="rgba(120, 150, 110, 0.38)"
+        strokeWidth="0.55"
+      />
+      <path
+        d="M30 32 Q 36 28 40 32 Q 34 36 30 32"
+        fill="rgba(100, 130, 95, 0.15)"
+        stroke="rgba(120, 150, 110, 0.35)"
+        strokeWidth="0.55"
+      />
+    </svg>
+  )
+}
+
+function FloraPair({ className }: { className?: string }) {
+  return (
+    <span className={className} style={{ display: 'flex', alignItems: 'center', gap: 2 }} aria-hidden>
+      <FloraSprig size={34} />
+      <FloraRose size={30} />
+    </span>
+  )
+}
+
+function InvPanelFlora() {
+  return (
+    <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', borderRadius: 44 }}>
+      <div className="inv-flora inv-flora--a" style={{ position: 'absolute', top: '-2%', right: '-3%', opacity: 0.5 }}>
+        <FloraRose size={72} />
+      </div>
+      <div className="inv-flora inv-flora--b" style={{ position: 'absolute', top: '18%', left: '-7%', opacity: 0.45 }}>
+        <FloraSprig size={88} flip />
+      </div>
+      <div className="inv-flora inv-flora--c" style={{ position: 'absolute', bottom: '32%', right: '-4%', opacity: 0.4 }}>
+        <FloraSprig size={64} />
+      </div>
+      <div className="inv-flora inv-flora--d" style={{ position: 'absolute', bottom: '8%', left: '-2%', opacity: 0.38 }}>
+        <FloraRose size={52} />
+      </div>
+      <div
+        className="inv-flora inv-flora--e"
+        style={{ position: 'absolute', left: '50%', top: '46%', width: 'min(92%, 300px)', height: 100, transform: 'translateX(-50%)' }}
+      >
+        <svg width="100%" height="100%" viewBox="0 0 280 100" fill="none" preserveAspectRatio="xMidYMid meet" aria-hidden>
+          <path
+            d="M0 52 Q 70 18 140 52 T 280 48"
+            stroke="rgba(232, 180, 200, 0.85)"
+            strokeWidth="0.7"
+            strokeDasharray="3 12"
+          />
+        </svg>
+      </div>
+    </div>
+  )
+}
+
+function FlowDivider({ accent = 'sparkle' }: { accent?: FloraAccent }) {
+  const center =
+    accent === 'rose' ? (
+      <FloraRose size={34} className="inv-flora inv-flora--divider" />
+    ) : accent === 'sprig' ? (
+      <FloraSprig size={36} className="inv-flora inv-flora--divider" />
+    ) : accent === 'pair' ? (
+      <FloraPair className="inv-flora inv-flora--divider" />
+    ) : (
+      <span style={{ color: 'rgba(232, 180, 200, 0.45)', fontSize: '0.55rem', letterSpacing: '0.4em' }}>✦</span>
+    )
   return (
     <div
       aria-hidden
@@ -57,26 +184,26 @@ function FlowDivider() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 16,
-        padding: '0.5rem 0 1.5rem',
-        opacity: 0.9,
+        gap: 14,
+        padding: '0.65rem 0 1.65rem',
+        opacity: 0.95,
       }}
     >
       <span
         style={{
           flex: 1,
-          maxWidth: 100,
+          maxWidth: 90,
           height: 1,
-          background: 'linear-gradient(90deg, transparent, rgba(232, 180, 200, 0.28))',
+          background: 'linear-gradient(90deg, transparent, rgba(232, 180, 200, 0.22))',
         }}
       />
-      <span style={{ color: 'rgba(232, 180, 200, 0.45)', fontSize: '0.55rem', letterSpacing: '0.4em' }}>✦</span>
+      {center}
       <span
         style={{
           flex: 1,
-          maxWidth: 100,
+          maxWidth: 90,
           height: 1,
-          background: 'linear-gradient(90deg, rgba(232, 180, 200, 0.28), transparent)',
+          background: 'linear-gradient(90deg, rgba(232, 180, 200, 0.22), transparent)',
         }}
       />
     </div>
@@ -424,6 +551,8 @@ export default function Home() {
           >
             <div
               style={{
+                position: 'relative',
+                overflow: 'hidden',
                 borderRadius: 44,
                 padding: 'clamp(1.85rem, 4.5vw, 3rem) clamp(1.1rem, 3.5vw, 2rem)',
                 background:
@@ -433,6 +562,8 @@ export default function Home() {
                 backdropFilter: 'blur(26px) saturate(1.1)',
               }}
             >
+              <InvPanelFlora />
+              <div style={{ position: 'relative', zIndex: 1 }}>
               <RevealSection delay={0}>
                 <div ref={nameCardRef}>
                   <div style={cardTitle}>{ar ? 'أهلاً، ما اسمك؟' : "Welcome, what's your name?"}</div>
@@ -466,7 +597,7 @@ export default function Home() {
                 </div>
               </RevealSection>
 
-              <FlowDivider />
+              <FlowDivider accent="rose" />
 
               <RevealSection delay={80}>
                 <div>
@@ -544,7 +675,7 @@ export default function Home() {
                 </div>
               </RevealSection>
 
-              <FlowDivider />
+              <FlowDivider accent="sprig" />
 
               <RevealSection delay={140}>
                 <div>
@@ -596,7 +727,7 @@ export default function Home() {
                 </div>
               </RevealSection>
 
-              <FlowDivider />
+              <FlowDivider accent="pair" />
 
               <RevealSection delay={200}>
                 <div>
@@ -654,7 +785,7 @@ export default function Home() {
                 </div>
               </RevealSection>
 
-              <FlowDivider />
+              <FlowDivider accent="rose" />
 
               <RevealSection delay={260}>
                 <div>
@@ -720,7 +851,7 @@ export default function Home() {
 
               {drawings.length > 0 && (
                 <>
-                  <FlowDivider />
+                  <FlowDivider accent="sprig" />
                   <RevealSection delay={120}>
                     <div>
                       <div style={cardTitle}>{ar ? 'معرض لوحات الضيوف' : 'Guest Artwork Gallery'}</div>
@@ -794,7 +925,7 @@ export default function Home() {
                 </>
               )}
 
-              <FlowDivider />
+              <FlowDivider accent="pair" />
 
               <RevealSection delay={100}>
                 <footer style={{ textAlign: 'center', padding: '0.5rem 0.5rem 0.25rem', width: '100%' }}>
@@ -803,6 +934,7 @@ export default function Home() {
                   <div style={{ textAlign: 'center', color: 'rgba(212,160,184,0.55)', letterSpacing: '.45em', fontSize: '.72rem', margin: '.85rem 0 0' }}>✦</div>
                 </footer>
               </RevealSection>
+              </div>
             </div>
           </div>
         </div>
@@ -823,10 +955,35 @@ export default function Home() {
             box-shadow: 0 20px 48px rgba(0,0,0,0.2);
           }
         }
+        @keyframes invFloraSway {
+          0%, 100% { transform: translateY(0) rotate(-2deg); }
+          50% { transform: translateY(-8px) rotate(1.5deg); }
+        }
+        @keyframes invFloraSwayAlt {
+          0%, 100% { transform: translateY(0) rotate(1.5deg); }
+          50% { transform: translateY(-6px) rotate(-2deg); }
+        }
+        @keyframes invFloraLine {
+          0%, 100% { opacity: 0.055; }
+          50% { opacity: 0.1; }
+        }
+        @keyframes invDividerBreathe {
+          0%, 100% { transform: scale(1); opacity: 0.92; }
+          50% { transform: scale(1.04); opacity: 1; }
+        }
+        .inv-flora--a { animation: invFloraSway 8s ease-in-out infinite; }
+        .inv-flora--b { animation: invFloraSwayAlt 11s ease-in-out infinite; animation-delay: -2.5s; }
+        .inv-flora--c { animation: invFloraSway 9.5s ease-in-out infinite; animation-delay: -4s; }
+        .inv-flora--d { animation: invFloraSwayAlt 7.5s ease-in-out infinite; animation-delay: -1s; }
+        .inv-flora--e { animation: invFloraLine 14s ease-in-out infinite; }
+        .inv-flora--divider { animation: invDividerBreathe 5s ease-in-out infinite; }
         @media (prefers-reduced-motion: reduce) {
           .reveal-section { opacity: 1 !important; transform: none !important; transition: none !important; }
           .gallery-tile { transition: none !important; }
           .gallery-tile:hover { transform: none !important; }
+          .inv-flora--a, .inv-flora--b, .inv-flora--c, .inv-flora--d, .inv-flora--e, .inv-flora--divider {
+            animation: none !important;
+          }
         }
       `}</style>
     </div>
