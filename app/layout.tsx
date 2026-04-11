@@ -43,8 +43,8 @@ const shareDescription =
   'March 17, 2027 · ١٧ مارس ٢٠٢٧ — You are warmly invited. Marwan & Dina.'
 
 const base = getMetadataBase()
-/** Plain /og.png avoids Next’s opengraph-image URL (?opengraph-image…) that some scrapers mishandle; Content-Type set in next.config. */
-const ogImageAbsolute = new URL('/og.png', base).toString()
+/** Static path in /public; Content-Type set in next.config. */
+const ogImageAbsolute = new URL('/og2.png', base).toString()
 
 /** Sharing Debugger wants `fb:app_id` for domain insights; create an app at developers.facebook.com and set this in Vercel. */
 const fbAppId =
