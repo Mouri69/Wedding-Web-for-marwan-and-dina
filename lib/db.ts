@@ -115,6 +115,7 @@ export function getApprovedDrawings(): Drawing[] {
 
 // ── Admin Auth ──
 export function checkAdminPassword(pw: string): boolean {
-  const stored = process.env.ADMIN_PASSWORD 
-  return pw === stored
+  const stored = process.env.ADMIN_PASSWORD?.trim()
+  if (!stored) return false
+  return pw.trim() === stored
 }

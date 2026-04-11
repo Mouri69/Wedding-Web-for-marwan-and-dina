@@ -5,6 +5,10 @@ interface RSVP { id:number; name:string; answer:string; created_at:string }
 interface Message { id:number; name:string; message:string; approved:boolean; created_at:string }
 interface Drawing { id:number; name:string; image_data:string; votes:number; approved:boolean; rank:number|null; created_at:string }
 
+function encPw(password: string) {
+  return encodeURIComponent(password.trim())
+}
+
 export default function AdminPage() {
   const [pw, setPw] = useState('')
   const [inputPw, setInputPw] = useState('')
@@ -26,10 +30,11 @@ export default function AdminPage() {
 
   const loadAll = useCallback(async (password: string) => {
     setLoading(true)
+    const q = encPw(password)
     const [r, m, d] = await Promise.all([
-      api(`/api/admin/rsvps?password=${password}`).then(r => r.json()),
-      api(`/api/admin/messages?password=${password}`).then(r => r.json()),
-      api(`/api/admin/drawings?password=${password}`).then(r => r.json()),
+      api(`/api/admin/rsvps?password=${q}`).then(r => r.json()),
+      api(`/api/admin/messages?password=${q}`).then(r => r.json()),
+      api(`/api/admin/drawings?password=${q}`).then(r => r.json()),
     ])
     setRsvps(r)
     setMessages(m)
@@ -41,18 +46,20 @@ export default function AdminPage() {
   useEffect(() => {
     const saved = localStorage.getItem('weddingAdminPw')
     if (!saved) return
-    fetch('/api/admin/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ password: saved }) })
-      .then(r => { if (r.ok) { setPw(saved); setAuthed(true); loadAll(saved) } else { localStorage.removeItem('weddingAdminPw') } })
+    const trimmed = saved.trim()
+    fetch('/api/admin/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ password: trimmed }) })
+      .then(r => { if (r.ok) { setPw(trimmed); setAuthed(true); loadAll(trimmed) } else { localStorage.removeItem('weddingAdminPw') } })
   }, [loadAll])
 
   async function login() {
-    if (!inputPw.trim()) return
-    const res = await fetch('/api/admin/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ password: inputPw }) })
+    const trimmed = inputPw.trim()
+    if (!trimmed) return
+    const res = await fetch('/api/admin/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ password: trimmed }) })
     if (res.ok) {
-      setPw(inputPw)
+      setPw(trimmed)
       setAuthed(true)
-      localStorage.setItem('weddingAdminPw', inputPw)
-      loadAll(inputPw)
+      localStorage.setItem('weddingAdminPw', trimmed)
+      loadAll(trimmed)
     } else {
       setLoginErr('❌ Wrong password, try again')
     }
@@ -65,31 +72,31 @@ export default function AdminPage() {
   }
 
   async function toggleMessageApproval(id: number, approved: boolean) {
-    await api(`/api/admin/messages/${id}?password=${pw}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ approved }) })
+    await api(`/api/admin/messages/${id}?password=${encPw(pw)}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ approved }) })
     setMessages(prev => prev.map(m => m.id===id ? {...m, approved} : m))
   }
 
   async function deleteMessage(id: number) {
     if (!confirm('Delete this message? Cannot be undone.')) return
-    await api(`/api/admin/messages/${id}?password=${pw}`, { method:'DELETE' })
+    await api(`/api/admin/messages/${id}?password=${encPw(pw)}`, { method:'DELETE' })
     setMessages(prev => prev.filter(m => m.id!==id))
   }
 
   async function toggleDrawingApproval(id: number, approved: boolean, rank: number|null) {
-    await api(`/api/admin/drawings/${id}?password=${pw}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ approved, rank }) })
+    await api(`/api/admin/drawings/${id}?password=${encPw(pw)}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ approved, rank }) })
     setDrawings(prev => prev.map(d => d.id===id ? {...d, approved, rank} : d))
   }
 
   async function updateRank(id: number) {
     const r = rankInput[id]
     const rankVal = r ? Number(r) : null
-    await api(`/api/admin/drawings/${id}?password=${pw}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ approved: drawings.find(d=>d.id===id)?.approved ?? false, rank: rankVal }) })
+    await api(`/api/admin/drawings/${id}?password=${encPw(pw)}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ approved: drawings.find(d=>d.id===id)?.approved ?? false, rank: rankVal }) })
     setDrawings(prev => prev.map(d => d.id===id ? {...d, rank: rankVal} : d))
   }
 
   async function deleteDrawing(id: number) {
     if (!confirm('Delete this drawing? Cannot be undone.')) return
-    await api(`/api/admin/drawings/${id}?password=${pw}`, { method:'DELETE' })
+    await api(`/api/admin/drawings/${id}?password=${encPw(pw)}`, { method:'DELETE' })
     setDrawings(prev => prev.filter(d => d.id!==id))
   }
 

@@ -30,13 +30,13 @@ const shareDescription =
   'March 17, 2027 · ١٧ مارس ٢٠٢٧ — You are warmly invited. Marwan & Dina.'
 
 const base = getMetadataBase()
+/** WhatsApp / Facebook need a direct PNG URL with image/* — use Next’s static OG route, not a stale /weddingmetadata.png cache. */
+const ogImageAbsolute = new URL('/opengraph-image.png', base).toString()
 
 export const metadata: Metadata = {
   metadataBase: base,
   title: shareTitle,
   description: shareDescription,
-  /* Preview images: app/opengraph-image.png + app/twitter-image.png (+ .alt.txt).
-     Next emits absolute URLs; avoids broken links when /public paths + wrong base. */
   openGraph: {
     title: shareTitle,
     description: shareDescription,
@@ -48,11 +48,19 @@ export const metadata: Metadata = {
     siteName: 'Marwan & Dina',
     locale: 'en_US',
     alternateLocale: ['ar_EG'],
+    images: [
+      {
+        url: ogImageAbsolute,
+        type: 'image/png',
+        alt: 'Invitation to our engagement — دعوة إلى خطوبتنا — Marwan & Dina',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: shareTitle,
     description: shareDescription,
+    images: [ogImageAbsolute],
   },
 }
 
