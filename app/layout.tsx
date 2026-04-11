@@ -46,7 +46,7 @@ const base = getMetadataBase()
 /** Static path in /public; must match `scripts/build-og.mjs` OG_W / OG_H. */
 const OG_IMAGE_W = 1200
 const OG_IMAGE_H = 630
-const ogImageAbsolute = new URL('/og2.png', base).toString()
+const ogImageAbsolute = new URL('/og.png', base).toString()
 
 /** Sharing Debugger wants `fb:app_id` for domain insights; create an app at developers.facebook.com and set this in Vercel. */
 const fbAppId =

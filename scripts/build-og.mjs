@@ -13,7 +13,7 @@ if (!src) {
   console.error('No source image found')
   process.exit(1)
 }
-const out = join(root, 'public', 'og2.png')  // kept your og2 name
+const out = join(root, 'public', 'og.png')  // kept your og2 name
 
 const OG_W = 1200
 const OG_H = 630
