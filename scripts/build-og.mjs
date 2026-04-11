@@ -21,7 +21,7 @@ const letterbox = { r: 26, g: 10, b: 18, alpha: 1 }
 
 const buf = readFileSync(src)
 await sharp(buf)
-  .resize(1200, 630, { fit: 'cover', background: letterbox, position: 'centre' })
+  .resize(800, 630, { fit: 'cover', background: letterbox, position: 'centre' })
   .png({ compressionLevel: 9 })
   .toFile(out)
 
