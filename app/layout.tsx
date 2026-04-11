@@ -37,16 +37,11 @@ function getMetadataBase(): URL {
 }
 
 /**
- * WhatsApp/Facebook cache preview images aggressively. Same URL = old bitmap
- * forever. Append a version so each Vercel deploy (or manual bump) forces a refetch.
+ * Link preview image is served at `/share-og` (see `app/share-og/route.ts`): it
+ * proxies your hosted PNG with `Content-Type: image/png` so scrapers accept it.
+ * Default upstream URL lives in `lib/shareOgSource.ts`; override with
+ * `NEXT_PUBLIC_OG_IMAGE_URL` on Vercel.
  */
-function getOgImagePathname(): string {
-  const fromVercel = process.env.VERCEL_DEPLOYMENT_ID?.trim()
-  const fromGit = process.env.VERCEL_GIT_COMMIT_SHA?.trim()?.slice(0, 12)
-  const manual = process.env.NEXT_PUBLIC_OG_VERSION?.trim()
-  const v = fromVercel || fromGit || manual
-  return v ? `/og3.png?v=${encodeURIComponent(v)}` : '/og3.png'
-}
 
 const shareTitle =
   'Invitation to our engagement · دعوة إلى خطوبتنا — Marwan & Dina'
@@ -55,10 +50,7 @@ const shareDescription =
   'May 26, 2026 · ٢٦ مايو ٢٠٢٦ — You are warmly invited. Marwan & Dina.'
 
 const base = getMetadataBase()
-/** File in /public from `scripts/build-og.mjs` (OG_W / OG_H). */
-const OG_IMAGE_W = 1200
-const OG_IMAGE_H = 630
-const ogImageAbsolute = new URL(getOgImagePathname(), base).toString()
+const ogImageAbsolute = new URL('/share-og', base).toString()
 
 /** Sharing Debugger wants `fb:app_id` for domain insights; create an app at developers.facebook.com and set this in Vercel. */
 const fbAppId =
@@ -83,8 +75,6 @@ export const metadata: Metadata = {
     images: [
       {
         url: ogImageAbsolute,
-        width: OG_IMAGE_W,
-        height: OG_IMAGE_H,
         type: 'image/png',
         alt: 'Invitation to our engagement — دعوة إلى خطوبتنا — Marwan & Dina',
       },
@@ -94,13 +84,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: shareTitle,
     description: shareDescription,
-    images: [
-      {
-        url: ogImageAbsolute,
-        width: OG_IMAGE_W,
-        height: OG_IMAGE_H,
-      },
-    ],
+    images: [ogImageAbsolute],
   },
 }
 
