@@ -36,6 +36,18 @@ function getMetadataBase(): URL {
   return new URL('http://localhost:3000')
 }
 
+/**
+ * WhatsApp/Facebook cache preview images aggressively. Same URL = old bitmap
+ * forever. Append a version so each Vercel deploy (or manual bump) forces a refetch.
+ */
+function getOgImagePathname(): string {
+  const fromVercel = process.env.VERCEL_DEPLOYMENT_ID?.trim()
+  const fromGit = process.env.VERCEL_GIT_COMMIT_SHA?.trim()?.slice(0, 12)
+  const manual = process.env.NEXT_PUBLIC_OG_VERSION?.trim()
+  const v = fromVercel || fromGit || manual
+  return v ? `/og3.png?v=${encodeURIComponent(v)}` : '/og3.png'
+}
+
 const shareTitle =
   'Invitation to our engagement · دعوة إلى خطوبتنا — Marwan & Dina'
 
@@ -43,10 +55,10 @@ const shareDescription =
   'May 26, 2026 · ٢٦ مايو ٢٠٢٦ — You are warmly invited. Marwan & Dina.'
 
 const base = getMetadataBase()
-/** Static path in /public; must match `scripts/build-og.mjs` OG_W / OG_H. */
+/** File in /public from `scripts/build-og.mjs` (OG_W / OG_H). */
 const OG_IMAGE_W = 1200
 const OG_IMAGE_H = 630
-const ogImageAbsolute = new URL('/og3.png', base).toString()
+const ogImageAbsolute = new URL(getOgImagePathname(), base).toString()
 
 /** Sharing Debugger wants `fb:app_id` for domain insights; create an app at developers.facebook.com and set this in Vercel. */
 const fbAppId =
