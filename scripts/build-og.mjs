@@ -16,24 +16,41 @@ if (!src) {
 }
 const out = join(root, 'public', 'og.png')
 
-/** 2× the usual 1200×630 so platforms can downscale sharply; still under typical 8MB OG limits. */
+/** 2× 1200×630 — platforms downscale; composite stays sharp. */
 const OG_W = 2400
 const OG_H = 1260
 
-/** Match page hero gradient feel so letterboxing isn’t harsh white bars. */
-const letterbox = { r: 26, g: 10, b: 18, alpha: 1 }
-
 const buf = readFileSync(src)
-await sharp(buf)
-  .rotate() // respect EXIF orientation so the photo isn’t sideways or mis-cropped
+const rotated = await sharp(buf).rotate().toBuffer()
+
+/**
+ * Portrait + 1.91:1 OG = tiny photo + huge bars in WhatsApp/Facebook.
+ * Stack: blurred `cover` fills the frame (attention-weighted crop), then
+ * sharp `contain` on top so the whole couple stays visible and readable.
+ */
+const background = await sharp(rotated)
+  .resize(OG_W, OG_H, {
+    fit: 'cover',
+    position: 'attention',
+    kernel: sharp.kernel.lanczos3,
+  })
+  .blur(36)
+  .modulate({ brightness: 0.82, saturation: 0.95 })
+  .toBuffer()
+
+const foreground = await sharp(rotated)
   .resize(OG_W, OG_H, {
     fit: 'contain',
     position: 'centre',
-    background: letterbox,
+    background: { r: 0, g: 0, b: 0, alpha: 0 },
     kernel: sharp.kernel.lanczos3,
     withoutEnlargement: false,
   })
-  // PNG is lossless; compressionLevel only affects file size, not visual quality
+  .png()
+  .toBuffer()
+
+await sharp(background)
+  .composite([{ input: foreground, blend: 'over' }])
   .png({ compressionLevel: 6, effort: 10 })
   .toFile(out)
 
