@@ -840,7 +840,7 @@ export default function Home() {
                           boxShadow: rsvpAnswer === ans ? '0 12px 36px rgba(60, 18, 36, 0.4)' : 'none',
                         }}
                       >
-                        <span style={{ fontSize: '1.1rem' }}>{icon}</span> {lang === 'ar' ? arTxt : en}
+                        <span style={{ fontSize: '1.1rem' }}></span> {lang === 'ar' ? arTxt : en}
                       </button>
                     ))}
                   </div>
