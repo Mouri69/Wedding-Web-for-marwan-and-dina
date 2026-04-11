@@ -568,15 +568,23 @@ export default function Home() {
       {/* ══════ PHASE: VIDEO ══════ */}
       {phase === 'video' && (
         <div style={{ position:'fixed', inset:0, zIndex:100, background:'#000', display:'flex', alignItems:'center', justifyContent:'center', flexDirection:'column' }}>
-          <video
-            ref={videoRef}
-            autoPlay
-            muted
-            playsInline
-            onEnded={handleVideoEnd}
-            style={{ width:'100%', height:'100%', objectFit:'cover', opacity:0.85 }}
-            src="/wedding-video.mp4"
-          />
+         <video
+  ref={videoRef}
+  autoPlay
+  muted
+  playsInline
+  loop={false}
+  onEnded={handleVideoEnd}
+  onCanPlay={() => {
+    // iOS Safari needs an explicit .play() call even with autoPlay attribute
+    videoRef.current?.play().catch(() => {
+      // If autoplay is blocked, skip video and go straight to main
+      handleVideoEnd()
+    })
+  }}
+  style={{ width:'100%', height:'100%', objectFit:'cover', opacity:0.85 }}
+  src="/wedding-video.mp4"
+/>
           {/* Image & Text Overlays - show on top of video when it ends */}
           {phase === 'video' && (
             <>
