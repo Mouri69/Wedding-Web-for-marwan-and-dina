@@ -2,24 +2,37 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 /**
- * Crawlers need a public HTTPS URL. If NEXT_PUBLIC_SITE_URL is still localhost
- * but the app runs on Vercel, use VERCEL_URL so og:image is not localhost.
+ * Social previews must use a URL crawlers can fetch. `VERCEL_URL` is the
+ * specific deployment host (e.g. *.vercel.app with a hash) which may be behind
+ * Vercel Deployment Protection → HTML/401 instead of the image. Prefer the
+ * stable production hostname (`VERCEL_PROJECT_PRODUCTION_URL`) or
+ * `NEXT_PUBLIC_SITE_URL` so og:image matches the public site.
  */
 function getMetadataBase(): URL {
-  const vercel = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null
-  const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim()
+  const deploymentUrl = process.env.VERCEL_URL
+    ? new URL(`https://${process.env.VERCEL_URL}`)
+    : null
 
+  const productionRaw = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim()
+  const productionUrl =
+    productionRaw != null && productionRaw.length > 0
+      ? new URL(productionRaw.includes('://') ? productionRaw : `https://${productionRaw}`)
+      : null
+
+  const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim()
   if (raw) {
     try {
       const url = new URL(raw.endsWith('/') ? raw.slice(0, -1) : raw)
       const local = url.hostname === 'localhost' || url.hostname === '127.0.0.1'
-      if (local && vercel) return new URL(vercel)
+      if (local && deploymentUrl) return deploymentUrl
       return url
     } catch {
       /* fall through */
     }
   }
-  if (vercel) return new URL(vercel)
+
+  if (productionUrl) return productionUrl
+  if (deploymentUrl) return deploymentUrl
   return new URL('http://localhost:3000')
 }
 
