@@ -814,10 +814,10 @@ export default function Home() {
                     }}
                   >
                     {[
-                      { ans: 'yes', icon: '🎉', en: "Yes, I'll be there!", ar: 'نعم، سأكون هناك!' },
-                      { ans: 'maybe', icon: '🤞', en: 'I hope to make it', ar: 'أتمنى أن أكون هناك' },
-                      { ans: 'no', icon: '💔', en: "Unfortunately I can't", ar: 'للأسف لن أتمكن' },
-                    ].map(({ ans, icon, en, ar: arTxt }) => (
+                      { ans: 'yes', en: "Yes, I'll be there!", ar: 'نعم، سأكون هناك!' },
+                      { ans: 'maybe', en: 'I hope to make it', ar: 'أتمنى أن أكون هناك' },
+                      { ans: 'no', en: "Unfortunately I can't", ar: 'للأسف لن أتمكن' },
+                    ].map(({ ans, en, ar: arTxt }) => (
                       <button
                         key={ans}
                         onClick={() => submitRsvp(ans)}
