@@ -577,11 +577,6 @@ export default function Home() {
             style={{ width:'100%', height:'100%', objectFit:'cover', opacity:0.85 }}
             src="/wedding-video.mp4"
           />
-          {/* Skip button */}
-          <button onClick={handleVideoEnd} style={{ position:'absolute', bottom:'2rem', right:'2rem', padding:'.5rem 1.4rem', background:'rgba(255,255,255,0.18)', border:'1px solid rgba(255,255,255,0.4)', borderRadius:30, color:'#fff', fontSize:'.72rem', letterSpacing:'.12em', cursor:'pointer', fontFamily:'Montserrat,sans-serif', backdropFilter:'blur(4px)' }}>
-            Skip →
-          </button>
-
           {/* Image & Text Overlays - show on top of video when it ends */}
           {phase === 'video' && (
             <>
