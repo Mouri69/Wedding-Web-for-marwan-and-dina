@@ -44,10 +44,10 @@ function getMetadataBase(): URL {
  */
 
 const shareTitle =
-  ''
+  'Marwan & Dena 💍'
 
 const shareDescription =
-  ''
+  'You are warmly invited to our engagement — May 26, 2026'
 
 const base = getMetadataBase()
 const ogImageAbsolute = new URL('/share-og', base).toString()
