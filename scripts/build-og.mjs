@@ -16,9 +16,12 @@ if (!src) {
 }
 const out = join(root, 'public', 'og.png')
 
+/** Match page hero gradient feel so letterboxing isn’t harsh white bars. */
+const letterbox = { r: 26, g: 10, b: 18, alpha: 1 }
+
 const buf = readFileSync(src)
 await sharp(buf)
-  .resize(1200, 630, { fit: 'cover', position: 'centre' })
+  .resize(1200, 630, { fit: 'contain', background: letterbox, position: 'centre' })
   .png({ compressionLevel: 9 })
   .toFile(out)
 
