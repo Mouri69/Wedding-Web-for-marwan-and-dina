@@ -29,27 +29,50 @@ function RevealSection({ children, delay = 0 }: { children: React.ReactNode; del
       ([e]) => {
         if (e.isIntersecting) setOn(true)
       },
-      { threshold: 0.07, rootMargin: '0px 0px -6% 0px' },
+      { threshold: 0.06, rootMargin: '0px 0px -4% 0px' },
     )
     io.observe(el)
     return () => io.disconnect()
   }, [])
+  const ease = 'cubic-bezier(0.25, 0.56, 0.32, 0.98)'
   return (
     <div
       ref={ref}
       className="reveal-section"
       style={{
         opacity: on ? 1 : 0,
-        transform: on ? 'translateY(0)' : 'translateY(28px)',
-        transition: `opacity 1s cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms, transform 1.1s cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms`,
+        transform: on ? 'translateY(0) scale(1)' : 'translateY(22px) scale(0.992)',
+        filter: on ? 'blur(0px)' : 'blur(12px)',
+        transition: `opacity 1.35s ${ease} ${delay}ms, transform 1.5s ${ease} ${delay}ms, filter 1.15s ${ease} ${delay}ms`,
+        willChange: on ? 'auto' : 'opacity, transform, filter',
       }}
     >
-      {children}
+      <div className="inv-section-body">{children}</div>
     </div>
   )
 }
 
-type FloraAccent = 'rose' | 'sprig' | 'pair' | 'sparkle'
+type FloraAccent = 'rose' | 'sprig' | 'pair' | 'sparkle' | 'petal'
+
+function PetalMotif({ className, style }: { className?: string; style?: React.CSSProperties }) {
+  const gid = useId().replace(/:/g, '')
+  return (
+    <svg className={className} width={44} height={44} viewBox="0 0 48 48" fill="none" aria-hidden style={style}>
+      <defs>
+        <linearGradient id={`petal-g-${gid}`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="rgba(255, 210, 225, 0.9)" />
+          <stop offset="100%" stopColor="rgba(180, 90, 120, 0.65)" />
+        </linearGradient>
+      </defs>
+      <ellipse cx="24" cy="14" rx="6" ry="10" transform="rotate(0 24 24)" fill={`url(#petal-g-${gid})`} opacity={0.85} />
+      <ellipse cx="24" cy="14" rx="6" ry="10" transform="rotate(72 24 24)" fill={`url(#petal-g-${gid})`} opacity={0.75} />
+      <ellipse cx="24" cy="14" rx="6" ry="10" transform="rotate(144 24 24)" fill={`url(#petal-g-${gid})`} opacity={0.7} />
+      <ellipse cx="24" cy="14" rx="6" ry="10" transform="rotate(216 24 24)" fill={`url(#petal-g-${gid})`} opacity={0.75} />
+      <ellipse cx="24" cy="14" rx="6" ry="10" transform="rotate(288 24 24)" fill={`url(#petal-g-${gid})`} opacity={0.7} />
+      <circle cx="24" cy="24" r="3.5" fill="rgba(255, 230, 238, 0.35)" stroke="rgba(255, 200, 218, 0.5)" strokeWidth="0.6" />
+    </svg>
+  )
+}
 
 function FloraRose({ size = 36, className, style }: { size?: number; className?: string; style?: React.CSSProperties }) {
   const uid = useId().replace(/:/g, '')
@@ -64,7 +87,7 @@ function FloraRose({ size = 36, className, style }: { size?: number; className?:
       style={{ flexShrink: 0, ...style }}
     >
       <defs>
-        <linearGradient id={`fr-${uid}`} x1="20%" y1="20  %" x2="100%" y2="100%">
+        <linearGradient id={`fr-${uid}`} x1="20%" y1="20%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="rgba(255, 220, 232, 0.95)" />
           <stop offset="100%" stopColor="rgba(200, 100, 140, 0.9)" />
         </linearGradient>
@@ -289,45 +312,23 @@ function InvPanelFlora() {
 function FlowDivider({ accent = 'sparkle' }: { accent?: FloraAccent }) {
   const center =
     accent === 'rose' ? (
-      <FloraRose size={48} className="inv-flora inv-flora--divider" style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.35))' }} />
+      <FloraRose size={44} className="inv-flora inv-flora--divider" style={{ filter: 'drop-shadow(0 2px 10px rgba(0,0,0,0.4))' }} />
     ) : accent === 'sprig' ? (
-      <FloraSprig size={50} className="inv-flora inv-flora--divider" style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.35))' }} />
+      <FloraSprig size={46} className="inv-flora inv-flora--divider" style={{ filter: 'drop-shadow(0 2px 10px rgba(0,0,0,0.4))' }} />
     ) : accent === 'pair' ? (
       <FloraPair className="inv-flora inv-flora--divider" />
+    ) : accent === 'petal' ? (
+      <PetalMotif className="inv-flora inv-flora--divider" style={{ filter: 'drop-shadow(0 2px 10px rgba(0,0,0,0.35))' }} />
     ) : (
-      <span style={{ color: 'rgba(255, 210, 225, 0.75)', fontSize: '0.65rem', letterSpacing: '0.4em' }}>✦</span>
+      <span style={{ color: 'rgba(255, 210, 225, 0.8)', fontSize: '0.7rem', letterSpacing: '0.45em' }}>✦</span>
     )
   return (
-    <div
-      aria-hidden
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 14,
-        padding: '0.65rem 0 1.65rem',
-        opacity: 0.95,
-      }}
-    >
-      <span
-        style={{
-          flex: 1,
-          maxWidth: 110,
-          height: 2,
-          borderRadius: 2,
-          background: 'linear-gradient(90deg, transparent, rgba(255, 200, 218, 0.5))',
-        }}
-      />
-      {center}
-      <span
-        style={{
-          flex: 1,
-          maxWidth: 110,
-          height: 2,
-          borderRadius: 2,
-          background: 'linear-gradient(90deg, rgba(255, 200, 218, 0.5), transparent)',
-        }}
-      />
+    <div className="section-blend" aria-hidden>
+      <div className="section-blend__veil section-blend__veil--from-above" />
+      <div className="section-blend__veil section-blend__veil--from-below" />
+      <div className="section-blend__bloom" />
+      <div className="section-blend__vine-hint" />
+      <div className="section-blend__motif">{center}</div>
     </div>
   )
 }
@@ -685,7 +686,7 @@ export default function Home() {
               }}
             >
               <InvPanelFlora />
-              <div style={{ position: 'relative', zIndex: 1 }}>
+              <div className="inv-unified-column" style={{ position: 'relative', zIndex: 1 }}>
               <RevealSection delay={0}>
                 <div ref={nameCardRef}>
                   <div style={cardTitle}>{ar ? 'أهلاً، ما اسمك؟' : "Welcome, what's your name?"}</div>
@@ -849,7 +850,7 @@ export default function Home() {
                 </div>
               </RevealSection>
 
-              <FlowDivider accent="pair" />
+              <FlowDivider accent="petal" />
 
               <RevealSection delay={200}>
                 <div>
@@ -907,7 +908,7 @@ export default function Home() {
                 </div>
               </RevealSection>
 
-              <FlowDivider accent="rose" />
+              <FlowDivider accent="pair" />
 
               <RevealSection delay={260}>
                 <div>
@@ -1047,7 +1048,7 @@ export default function Home() {
                 </>
               )}
 
-              <FlowDivider accent="pair" />
+              <FlowDivider accent="sparkle" />
 
               <RevealSection delay={100}>
                 <footer style={{ textAlign: 'center', padding: '0.5rem 0.5rem 0.25rem', width: '100%' }}>
@@ -1070,6 +1071,88 @@ export default function Home() {
         .inv-flow-input:focus {
           border-color: rgba(232, 180, 200, 0.45) !important;
           box-shadow: inset 0 2px 12px rgba(0,0,0,0.12), 0 0 0 1px rgba(232, 180, 200, 0.14) !important;
+        }
+        .inv-unified-column {
+          background: linear-gradient(
+            180deg,
+            rgba(255, 248, 250, 0.045) 0%,
+            transparent 14%,
+            transparent 86%,
+            rgba(255, 245, 248, 0.04) 100%
+          );
+        }
+        .section-blend {
+          position: relative;
+          min-height: clamp(56px, 10vw, 88px);
+          margin: 0.2rem 0 1.1rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: visible;
+        }
+        .section-blend__veil--from-above {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: -4px;
+          height: 58%;
+          background: linear-gradient(
+            to bottom,
+            rgba(8, 2, 8, 0) 0%,
+            rgba(20, 8, 16, 0.28) 75%,
+            rgba(20, 8, 16, 0) 100%
+          );
+          pointer-events: none;
+        }
+        .section-blend__veil--from-below {
+          position: absolute;
+          left: 0;
+          right: 0;
+          bottom: -4px;
+          height: 58%;
+          background: linear-gradient(
+            to top,
+            rgba(8, 2, 8, 0) 0%,
+            rgba(20, 8, 16, 0.28) 75%,
+            rgba(20, 8, 16, 0) 100%
+          );
+          pointer-events: none;
+        }
+        .section-blend__bloom {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          width: min(240px, 78%);
+          height: 52px;
+          background: radial-gradient(ellipse at center, rgba(255, 195, 210, 0.16) 0%, transparent 72%);
+          pointer-events: none;
+        }
+        .section-blend__vine-hint {
+          position: absolute;
+          left: 6%;
+          right: 6%;
+          top: 50%;
+          height: 1px;
+          transform: translateY(-50%);
+          background: linear-gradient(90deg, transparent, rgba(255, 200, 218, 0.28), transparent);
+          opacity: 0.85;
+          pointer-events: none;
+        }
+        .section-blend__motif {
+          position: relative;
+          z-index: 2;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 8px 18px;
+        }
+        @keyframes sectionBlendMist {
+          0%, 100% { opacity: 0.82; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.06); }
+        }
+        .section-blend__motif .inv-flora--divider {
+          animation: sectionBlendMist 6s ease-in-out infinite;
         }
         @media (hover: hover) {
           .gallery-tile:hover {
@@ -1106,7 +1189,8 @@ export default function Home() {
         .inv-flora--vine-edges { animation: invVineEdgePulse 14s ease-in-out infinite; opacity: 0.78; }
         .inv-flora--vine-corner { animation: invFloraSwayAlt 13s ease-in-out infinite; animation-delay: -2.5s; }
         @media (prefers-reduced-motion: reduce) {
-          .reveal-section { opacity: 1 !important; transform: none !important; transition: none !important; }
+          .reveal-section { opacity: 1 !important; transform: none !important; transition: none !important; filter: none !important; }
+          .section-blend__motif .inv-flora--divider { animation: none !important; }
           .gallery-tile { transition: none !important; }
           .gallery-tile:hover { transform: none !important; }
           .inv-flora--a, .inv-flora--b, .inv-flora--c, .inv-flora--d, .inv-flora--e, .inv-flora--divider,
