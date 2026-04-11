@@ -1,0 +1,39 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Montserrat:wght@300;400;500&family=Noto+Naskh+Arabic:wght@400;600&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --rose:        #6b1f3d;
+  --rose-light:  #d8a6b4;
+  --rose-dark:   #48162b;
+  --blush:       #f3e4dd;
+  --gold:        #d4af37;
+  --gold-light:  #f7e0a3;
+  --cream:       #f7efe5;
+  --text-dark:   #3c232f;
+  --text-mid:    #5f3b4c;
+  --text-soft:   #9d7c8b;
+  --card-bg:     rgba(255,250,244,0.9);
+  --card-border: rgba(212,175,55,0.18);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Montserrat', sans-serif;
+  background: radial-gradient(circle at top, rgba(212,175,55,0.14), transparent 28%), linear-gradient(180deg, #f7efe5 0%, #e8d5c4 100%);
+  color: var(--text-dark);
+  overflow-x: hidden;
+}
+
+@keyframes fadeUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+@keyframes fadeDown { from { opacity:0; transform:translateY(-40px); } to { opacity:1; transform:translateY(0); } }
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+@keyframes slideUp { from { opacity:0; transform:translateY(60px); } to { opacity:1; transform:translateY(0); } }
+@keyframes spin { to { transform:rotate(360deg); } }
+@keyframes breathe { 0%,100%{ opacity:.5; } 50%{ opacity:1; } }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: var(--rose-light); border-radius:4px; }
+canvas { touch-action:none; cursor:crosshair; }
