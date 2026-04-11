@@ -40,7 +40,7 @@ const background = await sharp(rotated)
 
 const foreground = await sharp(rotated)
   .resize(OG_W, OG_H, {
-    fit: 'contain',
+    fit: 'cover',
     position: 'centre',
     background: { r: 0, g: 0, b: 0, alpha: 0 },
     kernel: sharp.kernel.lanczos3,
