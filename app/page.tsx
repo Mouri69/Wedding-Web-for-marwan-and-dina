@@ -625,7 +625,7 @@ export default function Home() {
         <div style={{ display:'flex', flexDirection:'column', alignItems:'center', width:'100%', minHeight:'100vh' }}>
 
           {/* ── HERO SECTION ── */}
-          <div style={{ width:'100%', position:'relative', height:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'linear-gradient(135deg, #1a0f14 0%, #2d1820 50%, #1a0f14 100%)' }}>
+          <div style={{ width:'100%', position:'relative', height:'100dvh', display:'flex', alignItems:'center', justifyContent:'center', background:'linear-gradient(135deg, #1a0f14 0%, #2d1820 50%, #1a0f14 100%)' }}>
             {/* Frozen video last frame */}
             {videoFrameData && (
               <div style={{ position:'absolute', inset:0, backgroundImage: `url(${videoFrameData})`, backgroundSize:'cover', backgroundPosition:'center', zIndex:1 }} />
