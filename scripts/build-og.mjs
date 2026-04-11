@@ -16,18 +16,13 @@ if (!src) {
 }
 const out = join(root, 'public', 'og.png')
 
-/** 2× 1200×630 — platforms downscale; composite stays sharp. */
 const OG_W = 2400
 const OG_H = 1260
 
 const buf = readFileSync(src)
 const rotated = await sharp(buf).rotate().toBuffer()
 
-/**
- * Portrait + 1.91:1 OG = tiny photo + huge bars in WhatsApp/Facebook.
- * Stack: blurred `cover` fills the frame (attention-weighted crop), then
- * sharp `contain` on top so the whole couple stays visible and readable.
- */
+// Background: blurred cover fill (attention crop) — fills the whole frame
 const background = await sharp(rotated)
   .resize(OG_W, OG_H, {
     fit: 'cover',
@@ -35,14 +30,15 @@ const background = await sharp(rotated)
     kernel: sharp.kernel.lanczos3,
   })
   .blur(36)
-  .modulate({ brightness: 0.82, saturation: 0.95 })
+  .modulate({ brightness: 0.75, saturation: 0.8 })
   .toBuffer()
 
+// Foreground: CONTAIN so the FULL image is visible, no cropping
 const foreground = await sharp(rotated)
   .resize(OG_W, OG_H, {
-    fit: 'cover',
+    fit: 'contain',            // ← was 'cover', this is the key fix
     position: 'centre',
-    background: { r: 0, g: 0, b: 0, alpha: 0 },
+    background: { r: 0, g: 0, b: 0, alpha: 0 },  // transparent letterbox
     kernel: sharp.kernel.lanczos3,
     withoutEnlargement: false,
   })
