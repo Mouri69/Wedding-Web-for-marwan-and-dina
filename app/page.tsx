@@ -34,17 +34,16 @@ function RevealSection({ children, delay = 0 }: { children: React.ReactNode; del
     io.observe(el)
     return () => io.disconnect()
   }, [])
-  const ease = 'cubic-bezier(0.25, 0.56, 0.32, 0.98)'
+  const ease = 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
   return (
     <div
       ref={ref}
       className="reveal-section"
       style={{
         opacity: on ? 1 : 0,
-        transform: on ? 'translateY(0) scale(1)' : 'translateY(22px) scale(0.992)',
-        filter: on ? 'blur(0px)' : 'blur(12px)',
-        transition: `opacity 1.35s ${ease} ${delay}ms, transform 1.5s ${ease} ${delay}ms, filter 1.15s ${ease} ${delay}ms`,
-        willChange: on ? 'auto' : 'opacity, transform, filter',
+        transform: on ? 'translateY(0)' : 'translateY(14px)',
+        transition: `opacity 0.38s ${ease} ${delay}ms, transform 0.42s ${ease} ${delay}ms`,
+        willChange: on ? 'auto' : 'opacity, transform',
       }}
     >
       <div className="inv-section-body">{children}</div>
@@ -711,7 +710,7 @@ export default function Home() {
                         color: '#d4a0b8',
                         textAlign: 'center',
                         fontSize: '1.1rem',
-                        animation: 'fadeIn 0.6s ease',
+                        animation: 'fadeIn 0.28s ease',
                       }}
                     >
                       {nameMsg}
@@ -722,7 +721,7 @@ export default function Home() {
 
               <FlowDivider accent="rose" />
 
-              <RevealSection delay={80}>
+              <RevealSection delay={35}>
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1.4rem', marginBottom: '1.4rem', flexWrap: 'wrap' }}>
                     <div style={{ flex: 1, textAlign: 'center', minWidth: 120 }}>
@@ -800,7 +799,7 @@ export default function Home() {
 
               <FlowDivider accent="sprig" />
 
-              <RevealSection delay={140}>
+              <RevealSection delay={55}>
                 <div>
                   <div style={cardTitle}>{ar ? 'هل ستحضر؟' : 'Will you attend?'}</div>
                   <div style={cardSub}>{ar ? 'أخبرنا — سيتم حفظ إجابتك' : 'Let us know — your answer is saved'}</div>
@@ -845,14 +844,14 @@ export default function Home() {
                     ))}
                   </div>
                   {rsvpMsg && (
-                    <div style={{ marginTop: '1.1rem', fontFamily: 'Cormorant Garamond,serif', fontStyle: 'italic', color: '#d4a0b8', textAlign: 'center', fontSize: '1.1rem', animation: 'fadeIn 0.55s ease' }}>{rsvpMsg}</div>
+                    <div style={{ marginTop: '1.1rem', fontFamily: 'Cormorant Garamond,serif', fontStyle: 'italic', color: '#d4a0b8', textAlign: 'center', fontSize: '1.1rem', animation: 'fadeIn 0.25s ease' }}>{rsvpMsg}</div>
                   )}
                 </div>
               </RevealSection>
 
               <FlowDivider accent="petal" />
 
-              <RevealSection delay={200}>
+              <RevealSection delay={75}>
                 <div>
                   <div style={cardTitle}>{ar ? 'اكتب رسالة' : 'Write a message'}</div>
                   <div style={cardSub}>{ar ? 'شارك أمنياتك مع مروان ودينا' : 'Share your wishes with Marwan & Dina'}</div>
@@ -880,7 +879,7 @@ export default function Home() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginTop: '1rem' }}>
                     <button onClick={submitMessage} style={{ ...btnStyle, borderRadius: 999 }}>{ar ? 'أرسل التهاني' : 'Send Wishes'}</button>
                     {msgSent && (
-                      <span style={{ fontFamily: 'Cormorant Garamond,serif', fontStyle: 'italic', color: '#d4a0b8', fontSize: '1rem', animation: 'fadeIn 0.5s ease' }}>
+                      <span style={{ fontFamily: 'Cormorant Garamond,serif', fontStyle: 'italic', color: '#d4a0b8', fontSize: '1rem', animation: 'fadeIn 0.25s ease' }}>
                         {ar ? '💌 تم! سيسعدهم قراءة رسالتك.' : "💌 Sent! They'll love reading this."}
                       </span>
                     )}
@@ -910,7 +909,7 @@ export default function Home() {
 
               <FlowDivider accent="pair" />
 
-              <RevealSection delay={260}>
+              <RevealSection delay={95}>
                 <div>
                   <div style={cardTitle}>{ar ? 'ارسم لنا شيئاً' : 'Draw something for us'}</div>
                   <div style={cardSub}>{ar ? 'ستُحفظ للأبد' : 'Saved forever for Marwan & Dina'}</div>
@@ -964,7 +963,7 @@ export default function Home() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginTop: '1.1rem' }}>
                     <button onClick={submitDrawing} style={{ ...btnStyle, borderRadius: 999 }}>{ar ? 'أرسل الرسمة' : 'Submit Drawing'}</button>
                     {drawSent && (
-                      <span style={{ fontFamily: 'Cormorant Garamond,serif', fontStyle: 'italic', color: '#d4a0b8', fontSize: '1rem', animation: 'fadeIn 0.5s ease' }}>
+                      <span style={{ fontFamily: 'Cormorant Garamond,serif', fontStyle: 'italic', color: '#d4a0b8', fontSize: '1rem', animation: 'fadeIn 0.25s ease' }}>
                         {ar ? '🎨 رائع! تمّ إرسالها.' : '🎨 Beautiful! Submitted for review.'}
                       </span>
                     )}
@@ -975,7 +974,7 @@ export default function Home() {
               {drawings.length > 0 && (
                 <>
                   <FlowDivider accent="sprig" />
-                  <RevealSection delay={120}>
+                  <RevealSection delay={50}>
                     <div>
                       <div style={cardTitle}>{ar ? 'معرض لوحات الضيوف' : 'Guest Artwork Gallery'}</div>
                       <div style={cardSub}>{ar ? 'صوّت للمفضلة' : 'Vote for your favourites'}</div>
@@ -1050,7 +1049,7 @@ export default function Home() {
 
               <FlowDivider accent="sparkle" />
 
-              <RevealSection delay={100}>
+              <RevealSection delay={40}>
                 <footer style={{ textAlign: 'center', padding: '0.5rem 0.5rem 0.25rem', width: '100%' }}>
                   <div style={{ width: 56, height: 1, background: 'linear-gradient(90deg, transparent, rgba(212,160,184,0.5), transparent)', margin: '0.5rem auto 1.25rem' }} />
                   <p style={{ fontFamily: 'Cormorant Garamond,serif', fontStyle: 'italic', fontSize: '1.08rem', color: '#d4a0b8', letterSpacing: '.04em' }}>{ar ? 'بكل محبة، مروان ودينا' : 'With love, Marwan & Dina'}</p>
@@ -1148,11 +1147,11 @@ export default function Home() {
           padding: 8px 18px;
         }
         @keyframes sectionBlendMist {
-          0%, 100% { opacity: 0.82; transform: scale(1); }
-          50% { opacity: 1; transform: scale(1.06); }
+          0%, 100% { opacity: 0.88; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.04); }
         }
         .section-blend__motif .inv-flora--divider {
-          animation: sectionBlendMist 6s ease-in-out infinite;
+          animation: sectionBlendMist 3.5s ease-in-out infinite;
         }
         @media (hover: hover) {
           .gallery-tile:hover {
@@ -1189,7 +1188,7 @@ export default function Home() {
         .inv-flora--vine-edges { animation: invVineEdgePulse 14s ease-in-out infinite; opacity: 0.78; }
         .inv-flora--vine-corner { animation: invFloraSwayAlt 13s ease-in-out infinite; animation-delay: -2.5s; }
         @media (prefers-reduced-motion: reduce) {
-          .reveal-section { opacity: 1 !important; transform: none !important; transition: none !important; filter: none !important; }
+          .reveal-section { opacity: 1 !important; transform: none !important; transition: none !important; }
           .section-blend__motif .inv-flora--divider { animation: none !important; }
           .gallery-tile { transition: none !important; }
           .gallery-tile:hover { transform: none !important; }
