@@ -65,18 +65,18 @@ function FloraRose({ size = 36, className, style }: { size?: number; className?:
     >
       <defs>
         <linearGradient id={`fr-${uid}`} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="rgba(245, 200, 215, 0.85)" />
-          <stop offset="100%" stopColor="rgba(160, 70, 100, 0.5)" />
+          <stop offset="0%" stopColor="rgba(255, 220, 232, 0.95)" />
+          <stop offset="100%" stopColor="rgba(200, 100, 140, 0.9)" />
         </linearGradient>
       </defs>
       <path
         d="M28 10c4 2 7 6 6 11 2-1 5 0 6 3 1 4-2 8-6 9 1 3-1 7-5 8-4 1-8-2-9-6-3 2-7 0-9-3-2-4 1-9 6-10-1-5 3-10 8-11 1-3 5-4 8-2z"
         stroke={`url(#fr-${uid})`}
-        strokeWidth="0.9"
-        fill="rgba(200, 100, 130, 0.08)"
+        strokeWidth="1.6"
+        fill="rgba(220, 120, 150, 0.22)"
       />
-      <ellipse cx="28" cy="22" rx="5" ry="4" transform="rotate(-12 28 22)" fill="rgba(232, 170, 190, 0.15)" stroke="rgba(232, 180, 200, 0.35)" strokeWidth="0.6" />
-      <path d="M28 26v14M24 34c-4 2-6 6-5 10M32 34c4 2 6 6 5 10" stroke="rgba(120, 60, 80, 0.35)" strokeWidth="0.75" strokeLinecap="round" />
+      <ellipse cx="28" cy="22" rx="5" ry="4" transform="rotate(-12 28 22)" fill="rgba(245, 190, 210, 0.35)" stroke="rgba(255, 210, 225, 0.65)" strokeWidth="1.1" />
+      <path d="M28 26v14M24 34c-4 2-6 6-5 10M32 34c4 2 6 6 5 10" stroke="rgba(200, 130, 155, 0.75)" strokeWidth="1.2" strokeLinecap="round" />
     </svg>
   )
 }
@@ -98,67 +98,70 @@ function FloraSprig({ size = 40, flip, className, style }: { size?: number; flip
     >
       <path
         d="M8 40 Q 22 28, 24 12 Q 26 26, 38 36"
-        stroke="rgba(90, 120, 85, 0.35)"
-        strokeWidth="0.85"
+        stroke="rgba(140, 185, 145, 0.85)"
+        strokeWidth="1.5"
         strokeLinecap="round"
         fill="none"
       />
       <path
         d="M18 30 Q 14 24 10 26 Q 14 28 18 30"
-        fill="rgba(100, 130, 95, 0.2)"
-        stroke="rgba(120, 150, 110, 0.4)"
-        strokeWidth="0.55"
+        fill="rgba(120, 175, 130, 0.45)"
+        stroke="rgba(170, 220, 175, 0.75)"
+        strokeWidth="1"
       />
       <path
         d="M26 22 Q 30 16 34 20 Q 30 24 26 22"
-        fill="rgba(100, 130, 95, 0.18)"
-        stroke="rgba(120, 150, 110, 0.38)"
-        strokeWidth="0.55"
+        fill="rgba(110, 165, 120, 0.4)"
+        stroke="rgba(165, 215, 170, 0.72)"
+        strokeWidth="1"
       />
       <path
         d="M30 32 Q 36 28 40 32 Q 34 36 30 32"
-        fill="rgba(100, 130, 95, 0.15)"
-        stroke="rgba(120, 150, 110, 0.35)"
-        strokeWidth="0.55"
+        fill="rgba(105, 160, 115, 0.38)"
+        stroke="rgba(160, 210, 165, 0.68)"
+        strokeWidth="1"
       />
     </svg>
   )
 }
 
 function FloraPair({ className }: { className?: string }) {
+  const f = { filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.35))' } as React.CSSProperties
   return (
-    <span className={className} style={{ display: 'flex', alignItems: 'center', gap: 2 }} aria-hidden>
-      <FloraSprig size={34} />
-      <FloraRose size={30} />
+    <span className={className} style={{ display: 'flex', alignItems: 'center', gap: 6 }} aria-hidden>
+      <FloraSprig size={44} style={f} />
+      <FloraRose size={40} style={f} />
     </span>
   )
 }
 
 function InvPanelFlora() {
+  const glow = { filter: 'drop-shadow(0 0 10px rgba(255, 190, 210, 0.35))' } as React.CSSProperties
   return (
     <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', borderRadius: 44 }}>
-      <div className="inv-flora inv-flora--a" style={{ position: 'absolute', top: '-2%', right: '-3%', opacity: 0.5 }}>
-        <FloraRose size={72} />
+      <div className="inv-flora inv-flora--a" style={{ position: 'absolute', top: 8, right: 4, opacity: 0.95, ...glow }}>
+        <FloraRose size={80} />
       </div>
-      <div className="inv-flora inv-flora--b" style={{ position: 'absolute', top: '18%', left: '-7%', opacity: 0.45 }}>
-        <FloraSprig size={88} flip />
+      <div className="inv-flora inv-flora--b" style={{ position: 'absolute', top: '20%', left: 2, opacity: 0.92, ...glow }}>
+        <FloraSprig size={92} flip />
       </div>
-      <div className="inv-flora inv-flora--c" style={{ position: 'absolute', bottom: '32%', right: '-4%', opacity: 0.4 }}>
-        <FloraSprig size={64} />
+      <div className="inv-flora inv-flora--c" style={{ position: 'absolute', bottom: '30%', right: 4, opacity: 0.9, ...glow }}>
+        <FloraSprig size={76} />
       </div>
-      <div className="inv-flora inv-flora--d" style={{ position: 'absolute', bottom: '8%', left: '-2%', opacity: 0.38 }}>
-        <FloraRose size={52} />
+      <div className="inv-flora inv-flora--d" style={{ position: 'absolute', bottom: 12, left: 6, opacity: 0.92, ...glow }}>
+        <FloraRose size={64} />
       </div>
       <div
         className="inv-flora inv-flora--e"
-        style={{ position: 'absolute', left: '50%', top: '46%', width: 'min(92%, 300px)', height: 100, transform: 'translateX(-50%)' }}
+        style={{ position: 'absolute', left: '50%', top: '42%', width: 'min(88%, 320px)', height: 72, transform: 'translateX(-50%)', opacity: 0.35 }}
       >
-        <svg width="100%" height="100%" viewBox="0 0 280 100" fill="none" preserveAspectRatio="xMidYMid meet" aria-hidden>
+        <svg width="100%" height="100%" viewBox="0 0 280 72" fill="none" preserveAspectRatio="xMidYMid meet" aria-hidden>
           <path
-            d="M0 52 Q 70 18 140 52 T 280 48"
-            stroke="rgba(232, 180, 200, 0.85)"
-            strokeWidth="0.7"
-            strokeDasharray="3 12"
+            d="M0 38 Q 70 8 140 38 T 280 34"
+            stroke="rgba(255, 200, 218, 0.9)"
+            strokeWidth="1.8"
+            strokeDasharray="6 14"
+            strokeLinecap="round"
           />
         </svg>
       </div>
@@ -169,13 +172,13 @@ function InvPanelFlora() {
 function FlowDivider({ accent = 'sparkle' }: { accent?: FloraAccent }) {
   const center =
     accent === 'rose' ? (
-      <FloraRose size={34} className="inv-flora inv-flora--divider" />
+      <FloraRose size={48} className="inv-flora inv-flora--divider" style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.35))' }} />
     ) : accent === 'sprig' ? (
-      <FloraSprig size={36} className="inv-flora inv-flora--divider" />
+      <FloraSprig size={50} className="inv-flora inv-flora--divider" style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.35))' }} />
     ) : accent === 'pair' ? (
       <FloraPair className="inv-flora inv-flora--divider" />
     ) : (
-      <span style={{ color: 'rgba(232, 180, 200, 0.45)', fontSize: '0.55rem', letterSpacing: '0.4em' }}>✦</span>
+      <span style={{ color: 'rgba(255, 210, 225, 0.75)', fontSize: '0.65rem', letterSpacing: '0.4em' }}>✦</span>
     )
   return (
     <div
@@ -192,18 +195,20 @@ function FlowDivider({ accent = 'sparkle' }: { accent?: FloraAccent }) {
       <span
         style={{
           flex: 1,
-          maxWidth: 90,
-          height: 1,
-          background: 'linear-gradient(90deg, transparent, rgba(232, 180, 200, 0.22))',
+          maxWidth: 110,
+          height: 2,
+          borderRadius: 2,
+          background: 'linear-gradient(90deg, transparent, rgba(255, 200, 218, 0.5))',
         }}
       />
       {center}
       <span
         style={{
           flex: 1,
-          maxWidth: 90,
-          height: 1,
-          background: 'linear-gradient(90deg, rgba(232, 180, 200, 0.22), transparent)',
+          maxWidth: 110,
+          height: 2,
+          borderRadius: 2,
+          background: 'linear-gradient(90deg, rgba(255, 200, 218, 0.5), transparent)',
         }}
       />
     </div>
@@ -964,8 +969,8 @@ export default function Home() {
           50% { transform: translateY(-6px) rotate(-2deg); }
         }
         @keyframes invFloraLine {
-          0%, 100% { opacity: 0.055; }
-          50% { opacity: 0.1; }
+          0%, 100% { opacity: 0.28; }
+          50% { opacity: 0.42; }
         }
         @keyframes invDividerBreathe {
           0%, 100% { transform: scale(1); opacity: 0.92; }
