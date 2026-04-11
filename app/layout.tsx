@@ -40,7 +40,7 @@ const shareTitle =
   'Invitation to our engagement · دعوة إلى خطوبتنا — Marwan & Dina'
 
 const shareDescription =
-  'March 17, 2027 · ١٧ مارس ٢٠٢٧ — You are warmly invited. Marwan & Dina.'
+  'May 26, 2026 · ٢٦ مايو ٢٠٢٦ — You are warmly invited. Marwan & Dina.'
 
 const base = getMetadataBase()
 /** Static path in /public; must match `scripts/build-og.mjs` OG_W / OG_H. */
