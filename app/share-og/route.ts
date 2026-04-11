@@ -10,7 +10,7 @@ export async function GET() {
   const buf = Buffer.from(await res.arrayBuffer())
   return new NextResponse(buf, {
     headers: {
-      'Content-Type': 'image/png',
+      'Content-Type': 'image/jpeg',
       'Cache-Control': 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800',
     },
   })
