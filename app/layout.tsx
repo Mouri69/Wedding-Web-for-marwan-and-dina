@@ -43,7 +43,9 @@ const shareDescription =
   'March 17, 2027 · ١٧ مارس ٢٠٢٧ — You are warmly invited. Marwan & Dina.'
 
 const base = getMetadataBase()
-/** Static path in /public; Content-Type set in next.config. */
+/** Static path in /public; must match `scripts/build-og.mjs` OG_W / OG_H. */
+const OG_IMAGE_W = 1200
+const OG_IMAGE_H = 630
 const ogImageAbsolute = new URL('/og2.png', base).toString()
 
 /** Sharing Debugger wants `fb:app_id` for domain insights; create an app at developers.facebook.com and set this in Vercel. */
@@ -69,6 +71,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: ogImageAbsolute,
+        width: OG_IMAGE_W,
+        height: OG_IMAGE_H,
         type: 'image/png',
         alt: 'Invitation to our engagement — دعوة إلى خطوبتنا — Marwan & Dina',
       },
@@ -78,7 +82,13 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: shareTitle,
     description: shareDescription,
-    images: [ogImageAbsolute],
+    images: [
+      {
+        url: ogImageAbsolute,
+        width: OG_IMAGE_W,
+        height: OG_IMAGE_H,
+      },
+    ],
   },
 }
 
