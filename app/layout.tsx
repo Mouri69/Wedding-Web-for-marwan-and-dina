@@ -46,10 +46,15 @@ const base = getMetadataBase()
 /** Plain /og.png avoids Next’s opengraph-image URL (?opengraph-image…) that some scrapers mishandle; Content-Type set in next.config. */
 const ogImageAbsolute = new URL('/og.png', base).toString()
 
+/** Sharing Debugger wants `fb:app_id` for domain insights; create an app at developers.facebook.com and set this in Vercel. */
+const fbAppId =
+  process.env.FACEBOOK_APP_ID?.trim() || process.env.NEXT_PUBLIC_FACEBOOK_APP_ID?.trim()
+
 export const metadata: Metadata = {
   metadataBase: base,
   title: shareTitle,
   description: shareDescription,
+  ...(fbAppId ? { facebook: { appId: fbAppId } } : {}),
   openGraph: {
     title: shareTitle,
     description: shareDescription,
