@@ -30,8 +30,8 @@ const shareDescription =
   'March 17, 2027 · ١٧ مارس ٢٠٢٧ — You are warmly invited. Marwan & Dina.'
 
 const base = getMetadataBase()
-/** WhatsApp / Facebook need a direct PNG URL with image/* — use Next’s static OG route, not a stale /weddingmetadata.png cache. */
-const ogImageAbsolute = new URL('/opengraph-image.png', base).toString()
+/** Plain /og.png avoids Next’s opengraph-image URL (?opengraph-image…) that some scrapers mishandle; Content-Type set in next.config. */
+const ogImageAbsolute = new URL('/og.png', base).toString()
 
 export const metadata: Metadata = {
   metadataBase: base,

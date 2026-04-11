@@ -4,11 +4,7 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: '/opengraph-image.png',
-        headers: [{ key: 'Content-Type', value: 'image/png' }],
-      },
-      {
-        source: '/twitter-image.png',
+        source: '/og.png',
         headers: [{ key: 'Content-Type', value: 'image/png' }],
       },
       {
