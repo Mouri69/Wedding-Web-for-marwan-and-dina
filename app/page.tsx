@@ -589,7 +589,7 @@ export default function Home() {
               <div style={{ position:'absolute', left:'50%', bottom:0, width:'92%', maxWidth:620, zIndex:101, transform: heroStage === 'image' || heroStage === 'names' ? 'translate(-50%, 0)' : 'translate(-50%, 120px)', opacity: heroStage === 'image' || heroStage === 'names' ? 1 : 0, transition:'transform 1.8s ease .2s, opacity 1.2s ease .2s' }}>
                 <img
                   src="/wedding2.png"
-                  alt="Marwan & Dina"
+                  alt="Marwan & Dena"
                   style={{ width:'100%', height:'auto', borderRadius:28, boxShadow:'0 32px 90px rgba(15,8,18,0.45)', border:'1px solid rgba(255,255,255,0.18)' }}
                   onError={(e) => { (e.target as HTMLImageElement).style.display='none' }}
                 />
@@ -606,7 +606,7 @@ export default function Home() {
                   </h1>
                   <div style={{ fontFamily:'Cormorant Garamond,serif', fontSize:'clamp(1.6rem,4vw,2.8rem)', fontWeight:300, color:'#f2dfe8', fontStyle:'italic', textShadow:'0 3px 30px rgba(0,0,0,.45)', lineHeight:1.4, margin:'0.8rem 0 0', opacity: heroStage === 'names' ? 1 : 0, transform: heroStage === 'names' ? 'translateY(0)' : 'translateY(-30px)', transition:'opacity .9s ease .25s, transform .9s ease .25s' }}>&amp;</div>
                   <h1 style={{ fontFamily:'Cormorant Garamond,serif', fontSize:'clamp(3rem,8vw,5.4rem)', fontWeight:300, color:'#fff', textShadow:'0 3px 30px rgba(0,0,0,.55)', letterSpacing:'.08em', lineHeight:1.05, margin:'0 auto', opacity: heroStage === 'names' ? 1 : 0, transform: heroStage === 'names' ? 'translateY(0)' : 'translateY(-30px)', transition:'opacity .9s ease .3s, transform .9s ease .3s' }}>
-                    Dina
+                    Dena
                   </h1>
                   <p style={{ fontFamily:'Cormorant Garamond,serif', fontSize:'clamp(1rem,2.5vw,1.4rem)', color:'#f2dfe8', letterSpacing:'.2em', marginTop:'.7rem', fontStyle:'italic', textShadow:'0 2px 12px rgba(0,0,0,0.55)', opacity: heroStage === 'names' ? 1 : 0, transform: heroStage === 'names' ? 'translateY(0)' : 'translateY(-30px)', transition:'opacity .9s ease .35s, transform .9s ease .35s' }}>
                     {ar ? '١٧ مارس ٢٠٢٧' : 'May 26, 2026'}
@@ -635,7 +635,7 @@ export default function Home() {
             <div style={{ position:'absolute', left:'50%', bottom:'0%', width:'92%', maxWidth:620, zIndex:2, transform: heroStage === 'image' || heroStage === 'names' ? 'translate(-50%, 0)' : 'translate(-50%, 120px)', opacity: heroStage === 'image' || heroStage === 'names' ? 1 : 0, transition:'transform 1.8s ease .2s, opacity 1.2s ease .2s' }}>
               <img
                 src="/wedding2.png"
-                alt="Marwan & Dina"
+                alt="Marwan & Dena"
                 style={{ width:'100%', height:'auto', borderRadius:28, boxShadow:'0 32px 90px rgba(15,8,18,0.45)', border:'1px solid rgba(255,255,255,0.18)' }}
                 onError={(e) => { (e.target as HTMLImageElement).style.display='none' }}
               />
@@ -652,7 +652,7 @@ export default function Home() {
                 </h1>
                 <div style={{ fontFamily:'Cormorant Garamond,serif', fontSize:'clamp(1.6rem,4vw,2.8rem)', fontWeight:300, color:'#f2dfe8', fontStyle:'italic', textShadow:'0 3px 30px rgba(0,0,0,.45)', lineHeight:1.4, margin:'0.8rem 0 0', opacity: heroStage === 'names' ? 1 : 0, transform: heroStage === 'names' ? 'translateY(0)' : 'translateY(-30px)', transition:'opacity .9s ease .25s, transform .9s ease .25s' }}>&amp;</div>
                 <h1 style={{ fontFamily:'Cormorant Garamond,serif', fontSize:'clamp(3rem,8vw,5.4rem)', fontWeight:300, color:'#fff', textShadow:'0 3px 30px rgba(0,0,0,.55)', letterSpacing:'.08em', lineHeight:1.05, opacity: heroStage === 'names' ? 1 : 0, transform: heroStage === 'names' ? 'translateY(0)' : 'translateY(-30px)', transition:'opacity .9s ease .3s, transform .9s ease .3s' }}>
-                  Dina
+                  Dena
                 </h1>
                 <p style={{ fontFamily:'Cormorant Garamond,serif', fontSize:'clamp(1rem,2.5vw,1.4rem)', color:'#f2dfe8', letterSpacing:'.2em', marginTop:'.7rem', fontStyle:'italic', textShadow:'0 2px 12px rgba(0,0,0,0.55)', opacity: heroStage === 'names' ? 1 : 0, transform: heroStage === 'names' ? 'translateY(0)' : 'translateY(-30px)', transition:'opacity .9s ease .35s, transform .9s ease .35s' }}>
                   {ar ? '١٧ مارس ٢٠٢٧' : 'May 26, 2026'}
@@ -854,7 +854,7 @@ export default function Home() {
               <RevealSection delay={75}>
                 <div>
                   <div style={cardTitle}>{ar ? 'اكتب رسالة' : 'Write a message'}</div>
-                  <div style={cardSub}>{ar ? 'شارك أمنياتك مع مروان ودينا' : 'Share your wishes with Marwan & Dina'}</div>
+                  <div style={cardSub}>{ar ? 'شارك أمنياتك مع مروان ودينا' : 'Share your wishes with Marwan & Dena'}</div>
                   <textarea
                     className="inv-flow-input"
                     value={msgText}
@@ -912,7 +912,7 @@ export default function Home() {
               <RevealSection delay={95}>
                 <div>
                   <div style={cardTitle}>{ar ? 'ارسم لنا شيئاً' : 'Draw something for us'}</div>
-                  <div style={cardSub}>{ar ? 'ستُحفظ للأبد' : 'Saved forever for Marwan & Dina'}</div>
+                  <div style={cardSub}>{ar ? 'ستُحفظ للأبد' : 'Saved forever for Marwan & Dena'}</div>
 
                   <div style={{ borderRadius: 24, overflow: 'hidden', background: '#fff', position: 'relative', boxShadow: '0 20px 50px rgba(0,0,0,0.22)' }}>
                     <canvas ref={canvasRef} width={660} height={280} style={{ display: 'block', width: '100%', height: 'auto' }} />
@@ -1052,7 +1052,7 @@ export default function Home() {
               <RevealSection delay={40}>
                 <footer style={{ textAlign: 'center', padding: '0.5rem 0.5rem 0.25rem', width: '100%' }}>
                   <div style={{ width: 56, height: 1, background: 'linear-gradient(90deg, transparent, rgba(212,160,184,0.5), transparent)', margin: '0.5rem auto 1.25rem' }} />
-                  <p style={{ fontFamily: 'Cormorant Garamond,serif', fontStyle: 'italic', fontSize: '1.08rem', color: '#d4a0b8', letterSpacing: '.04em' }}>{ar ? 'بكل محبة، مروان ودينا' : 'With love, Marwan & Dina'}</p>
+                  <p style={{ fontFamily: 'Cormorant Garamond,serif', fontStyle: 'italic', fontSize: '1.08rem', color: '#d4a0b8', letterSpacing: '.04em' }}>{ar ? 'بكل محبة، مروان ودينا' : 'With love, Marwan & Dena'}</p>
                   <div style={{ textAlign: 'center', color: 'rgba(212,160,184,0.55)', letterSpacing: '.45em', fontSize: '.72rem', margin: '.85rem 0 0' }}>✦</div>
                 </footer>
               </RevealSection>

@@ -73,7 +73,7 @@ const textOverlay = Buffer.from(`<svg width="${OG_W}" height="${OG_H}" xmlns="ht
   <text x="55" y="138" class="sub">WE ARE GETTING MARRIED</text>
   <text x="48" y="278" class="name">Marwan</text>
   <text x="58" y="348" class="amp">&amp;</text>
-  <text x="48" y="480" class="name">Dina</text>
+  <text x="48" y="480" class="name">Dena</text>
   <text x="58" y="558" class="date">May 26, 2026</text>
 </svg>`)
 

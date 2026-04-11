@@ -115,7 +115,7 @@ export default function AdminPage() {
     <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'linear-gradient(155deg,#fdf0f3,#fdf8f5,#f8efe8)' }}>
       <div style={{ background:'rgba(255,255,255,0.88)', border:'0.5px solid rgba(201,121,140,.25)', borderRadius:20, padding:'2.5rem 2.2rem', width:'100%', maxWidth:380, backdropFilter:'blur(8px)', textAlign:'center', boxShadow:'0 8px 40px rgba(138,63,82,0.1)' }}>
         <h1 style={{ fontFamily:'Cormorant Garamond,serif', fontSize:'2rem', fontWeight:400, color:'#8a3f52', marginBottom:'.3rem' }}>Admin Panel</h1>
-        <p style={{ fontSize:'.75rem', color:'#b08898', letterSpacing:'.1em', textTransform:'uppercase', marginBottom:'1.8rem' }}>Marwan & Dina · Wedding</p>
+        <p style={{ fontSize:'.75rem', color:'#b08898', letterSpacing:'.1em', textTransform:'uppercase', marginBottom:'1.8rem' }}>Marwan & Dena · Wedding</p>
         <input
           type="password"
           value={inputPw}
@@ -137,7 +137,7 @@ export default function AdminPage() {
       <div style={{ background:'rgba(255,255,255,0.92)', borderBottom:'0.5px solid rgba(201,121,140,.2)', padding:'1.2rem 2rem', display:'flex', alignItems:'center', justifyContent:'space-between', position:'sticky', top:0, zIndex:10, backdropFilter:'blur(8px)' }}>
         <div>
           <h1 style={{ fontFamily:'Cormorant Garamond,serif', fontSize:'1.5rem', fontWeight:400, color:'#8a3f52' }}>Wedding Dashboard</h1>
-          <span style={{ fontSize:'.7rem', color:'#b08898', letterSpacing:'.1em', textTransform:'uppercase' }}>Marwan & Dina · May 26, 2026</span>
+          <span style={{ fontSize:'.7rem', color:'#b08898', letterSpacing:'.1em', textTransform:'uppercase' }}>Marwan & Dena · May 26, 2026</span>
         </div>
         <div style={{ display:'flex', gap:10, alignItems:'center' }}>
           <button onClick={() => loadAll(pw)} style={adminToolBtn}>🔄 Refresh</button>

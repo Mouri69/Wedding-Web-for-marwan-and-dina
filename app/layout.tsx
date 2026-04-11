@@ -69,14 +69,14 @@ export const metadata: Metadata = {
       base.hostname === 'localhost' || base.hostname === '127.0.0.1'
         ? undefined
         : `${base.origin}/`,
-    siteName: 'Marwan & Dina',
+    siteName: 'Marwan & Dena',
     locale: 'en_US',
     alternateLocale: ['ar_EG'],
     images: [
       {
         url: ogImageAbsolute,
         type: 'image/png',
-        alt: 'Invitation to our engagement — دعوة إلى خطوبتنا — Marwan & Dina',
+        alt: 'Invitation to our engagement — دعوة إلى خطوبتنا — Marwan & Dena',
       },
     ],
   },
