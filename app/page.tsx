@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback, Fragment } from 'react'
 
 /* ── Types ── */
 interface Message { id: number; name: string; message: string }
@@ -19,6 +19,70 @@ function useCountdown(target: Date) {
   return { d, h: String(h).padStart(2,'0'), m: String(m).padStart(2,'0'), s: String(s).padStart(2,'0') }
 }
 
+function RevealSection({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [on, setOn] = useState(false)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) setOn(true)
+      },
+      { threshold: 0.07, rootMargin: '0px 0px -6% 0px' },
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+  return (
+    <div
+      ref={ref}
+      className="reveal-section"
+      style={{
+        opacity: on ? 1 : 0,
+        transform: on ? 'translateY(0)' : 'translateY(28px)',
+        transition: `opacity 1s cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms, transform 1.1s cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms`,
+      }}
+    >
+      {children}
+    </div>
+  )
+}
+
+function FlowDivider() {
+  return (
+    <div
+      aria-hidden
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 16,
+        padding: '0.5rem 0 1.5rem',
+        opacity: 0.9,
+      }}
+    >
+      <span
+        style={{
+          flex: 1,
+          maxWidth: 100,
+          height: 1,
+          background: 'linear-gradient(90deg, transparent, rgba(232, 180, 200, 0.28))',
+        }}
+      />
+      <span style={{ color: 'rgba(232, 180, 200, 0.45)', fontSize: '0.55rem', letterSpacing: '0.4em' }}>✦</span>
+      <span
+        style={{
+          flex: 1,
+          maxWidth: 100,
+          height: 1,
+          background: 'linear-gradient(90deg, rgba(232, 180, 200, 0.28), transparent)',
+        }}
+      />
+    </div>
+  )
+}
+
 export default function Home() {
   const WEDDING_DATE = new Date('2027-03-17T18:00:00')
   const countdown = useCountdown(WEDDING_DATE)
@@ -36,7 +100,7 @@ export default function Home() {
   const [msgSent, setMsgSent] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [drawings, setDrawings] = useState<Drawing[]>([])
-  const [drawColor, setDrawColor] = useState('#613F21')
+  const [drawColor, setDrawColor] = useState('#6b2540')
   const [isEraser, setIsEraser] = useState(false)
   const [brushSize, setBrushSize] = useState(5)
   const [drawSent, setDrawSent] = useState(false)
@@ -138,7 +202,7 @@ export default function Home() {
     const ctx = ctxRef.current
     if (!canvas || !ctx) return
     const p = getPos(e, canvas)
-    ctx.strokeStyle = isEraser ? '#5B4242' : drawColor
+    ctx.strokeStyle = isEraser ? '#3a2430' : drawColor
     ctx.lineWidth = brushSize
     ctx.lineTo(p.x, p.y)
     ctx.stroke()
@@ -231,21 +295,21 @@ export default function Home() {
     await loadData()
   }
 
-  const colors = ['#613F21','#c19f7c','#291B12','#6e9e82','#7590bf','#1a1410','#f5e6d3']
+  const colors = ['#6b2540', '#c9788c', '#3d1522', '#6e9e82', '#7a8ebf', '#c9a27a', '#faf2f5']
 
   /* ══════════════════════════════════════════════════
      RENDER
   ══════════════════════════════════════════════════ */
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #1a1410 0%, #2d2219 50%, #3d2817 100%)' }}>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(175deg, #0c0508 0%, #1a0a12 38%, #2a101c 72%, #1f0a14 100%)' }}>
       {/* Hidden canvas for capturing video frame */}
       <canvas ref={frameCanvasRef} style={{ display:'none' }} />
 
       {/* ── LANG TOGGLE ── */}
       {phase === 'main' && (
-        <div style={{ position:'fixed', top:'1rem', right:'1rem', zIndex:999, display:'flex', background:'rgba(41,27,18,0.94)', border:'0.5px solid rgba(193,159,124,0.35)', borderRadius:30, overflow:'hidden', backdropFilter:'blur(8px)', boxShadow:'0 2px 16px rgba(0,0,0,0.3)' }}>
+        <div style={{ position:'fixed', top:'1rem', right:'1rem', zIndex:999, display:'flex', background:'rgba(26,10,20,0.88)', border:'1px solid rgba(232,180,200,0.2)', borderRadius:999, overflow:'hidden', backdropFilter:'blur(14px)', boxShadow:'0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,220,230,0.06)' }}>
           {(['en','ar'] as const).map(l => (
-            <button key={l} onClick={() => setLang(l)} style={{ padding:'.4rem 1rem', fontSize:'.72rem', letterSpacing:'.1em', border:'none', background: lang===l ? '#613F21' : 'transparent', color: lang===l ? '#f5e6d3' : '#c19f7c', cursor:'pointer', borderRadius:30, fontFamily:'Montserrat,sans-serif' }}>
+            <button key={l} onClick={() => setLang(l)} style={{ padding:'.45rem 1.15rem', fontSize:'.72rem', letterSpacing:'.1em', border:'none', background: lang===l ? 'linear-gradient(135deg, #7d2d4a 0%, #5a1f32 100%)' : 'transparent', color: lang===l ? '#faf2f5' : '#d4a0b8', cursor:'pointer', borderRadius:999, fontFamily:'Montserrat,sans-serif', transition:'color .2s, background .2s' }}>
               {l === 'en' ? 'EN' : 'عربي'}
             </button>
           ))}
@@ -291,11 +355,11 @@ export default function Home() {
                   <h1 style={{ fontFamily:'Cormorant Garamond,serif', fontSize:'clamp(3rem,8vw,5.4rem)', fontWeight:300, color:'#fff', textShadow:'0 3px 30px rgba(0,0,0,.55)', letterSpacing:'.08em', lineHeight:1.05, opacity: heroStage === 'names' ? 1 : 0, transform: heroStage === 'names' ? 'translateY(0)' : 'translateY(-30px)', transition:'opacity .9s ease .2s, transform .9s ease .2s' }}>
                     Marwan
                   </h1>
-                  <div style={{ fontFamily:'Cormorant Garamond,serif', fontSize:'clamp(1.6rem,4vw,2.8rem)', fontWeight:300, color:'#f5e6cc', fontStyle:'italic', textShadow:'0 3px 30px rgba(0,0,0,.45)', lineHeight:1.4, margin:'0.8rem 0 0', opacity: heroStage === 'names' ? 1 : 0, transform: heroStage === 'names' ? 'translateY(0)' : 'translateY(-30px)', transition:'opacity .9s ease .25s, transform .9s ease .25s' }}>&amp;</div>
+                  <div style={{ fontFamily:'Cormorant Garamond,serif', fontSize:'clamp(1.6rem,4vw,2.8rem)', fontWeight:300, color:'#f2dfe8', fontStyle:'italic', textShadow:'0 3px 30px rgba(0,0,0,.45)', lineHeight:1.4, margin:'0.8rem 0 0', opacity: heroStage === 'names' ? 1 : 0, transform: heroStage === 'names' ? 'translateY(0)' : 'translateY(-30px)', transition:'opacity .9s ease .25s, transform .9s ease .25s' }}>&amp;</div>
                   <h1 style={{ fontFamily:'Cormorant Garamond,serif', fontSize:'clamp(3rem,8vw,5.4rem)', fontWeight:300, color:'#fff', textShadow:'0 3px 30px rgba(0,0,0,.55)', letterSpacing:'.08em', lineHeight:1.05, margin:'0 auto', opacity: heroStage === 'names' ? 1 : 0, transform: heroStage === 'names' ? 'translateY(0)' : 'translateY(-30px)', transition:'opacity .9s ease .3s, transform .9s ease .3s' }}>
                     Dina
                   </h1>
-                  <p style={{ fontFamily:'Cormorant Garamond,serif', fontSize:'clamp(1rem,2.5vw,1.4rem)', color:'#f5e6cc', letterSpacing:'.2em', marginTop:'.7rem', fontStyle:'italic', textShadow:'0 2px 12px rgba(0,0,0,0.55)', opacity: heroStage === 'names' ? 1 : 0, transform: heroStage === 'names' ? 'translateY(0)' : 'translateY(-30px)', transition:'opacity .9s ease .35s, transform .9s ease .35s' }}>
+                  <p style={{ fontFamily:'Cormorant Garamond,serif', fontSize:'clamp(1rem,2.5vw,1.4rem)', color:'#f2dfe8', letterSpacing:'.2em', marginTop:'.7rem', fontStyle:'italic', textShadow:'0 2px 12px rgba(0,0,0,0.55)', opacity: heroStage === 'names' ? 1 : 0, transform: heroStage === 'names' ? 'translateY(0)' : 'translateY(-30px)', transition:'opacity .9s ease .35s, transform .9s ease .35s' }}>
                     {ar ? '١٧ مارس ٢٠٢٧' : 'March 17, 2027'}
                   </p>
                 </div>
@@ -337,211 +401,409 @@ export default function Home() {
                 <h1 style={{ fontFamily:'Cormorant Garamond,serif', fontSize:'clamp(3rem,8vw,5.4rem)', fontWeight:300, color:'#fff', textShadow:'0 3px 30px rgba(0,0,0,.55)', letterSpacing:'.08em', lineHeight:1.05, opacity: heroStage === 'names' ? 1 : 0, transform: heroStage === 'names' ? 'translateY(0)' : 'translateY(-30px)', transition:'opacity .9s ease .2s, transform .9s ease .2s' }}>
                   Marwan
                 </h1>
-                <div style={{ fontFamily:'Cormorant Garamond,serif', fontSize:'clamp(1.6rem,4vw,2.8rem)', fontWeight:300, color:'#f5e6cc', fontStyle:'italic', textShadow:'0 3px 30px rgba(0,0,0,.45)', lineHeight:1.4, margin:'0.8rem 0 0', opacity: heroStage === 'names' ? 1 : 0, transform: heroStage === 'names' ? 'translateY(0)' : 'translateY(-30px)', transition:'opacity .9s ease .25s, transform .9s ease .25s' }}>&amp;</div>
+                <div style={{ fontFamily:'Cormorant Garamond,serif', fontSize:'clamp(1.6rem,4vw,2.8rem)', fontWeight:300, color:'#f2dfe8', fontStyle:'italic', textShadow:'0 3px 30px rgba(0,0,0,.45)', lineHeight:1.4, margin:'0.8rem 0 0', opacity: heroStage === 'names' ? 1 : 0, transform: heroStage === 'names' ? 'translateY(0)' : 'translateY(-30px)', transition:'opacity .9s ease .25s, transform .9s ease .25s' }}>&amp;</div>
                 <h1 style={{ fontFamily:'Cormorant Garamond,serif', fontSize:'clamp(3rem,8vw,5.4rem)', fontWeight:300, color:'#fff', textShadow:'0 3px 30px rgba(0,0,0,.55)', letterSpacing:'.08em', lineHeight:1.05, opacity: heroStage === 'names' ? 1 : 0, transform: heroStage === 'names' ? 'translateY(0)' : 'translateY(-30px)', transition:'opacity .9s ease .3s, transform .9s ease .3s' }}>
                   Dina
                 </h1>
-                <p style={{ fontFamily:'Cormorant Garamond,serif', fontSize:'clamp(1rem,2.5vw,1.4rem)', color:'#f5e6cc', letterSpacing:'.2em', marginTop:'.7rem', fontStyle:'italic', textShadow:'0 2px 12px rgba(0,0,0,0.55)', opacity: heroStage === 'names' ? 1 : 0, transform: heroStage === 'names' ? 'translateY(0)' : 'translateY(-30px)', transition:'opacity .9s ease .35s, transform .9s ease .35s' }}>
+                <p style={{ fontFamily:'Cormorant Garamond,serif', fontSize:'clamp(1rem,2.5vw,1.4rem)', color:'#f2dfe8', letterSpacing:'.2em', marginTop:'.7rem', fontStyle:'italic', textShadow:'0 2px 12px rgba(0,0,0,0.55)', opacity: heroStage === 'names' ? 1 : 0, transform: heroStage === 'names' ? 'translateY(0)' : 'translateY(-30px)', transition:'opacity .9s ease .35s, transform .9s ease .35s' }}>
                   {ar ? '١٧ مارس ٢٠٢٧' : 'March 17, 2027'}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* ── CARDS SECTION ── */}
-          <div style={{ width:'100%', maxWidth:720, padding:'3rem 1.2rem', display:'flex', flexDirection:'column', gap:'2rem', paddingBottom:'4rem', direction: ar ? 'rtl' : 'ltr' }}>
-
-            {/* ── NAME CARD ── */}
-            <div ref={nameCardRef} style={card}>
-              <div style={cardTitle}>{ar ? 'أهلاً، ما اسمك؟' : "Welcome, what's your name?"}</div>
-              <div style={cardSub}>{ar ? 'سنستخدمه في كل أقسام الدعوة' : "We'll use it across the invitation"}</div>
-              <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
-                <input
-                  value={guestName}
-                  onChange={e => setGuestName(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && saveName()}
-                  placeholder={ar ? 'اسمك' : 'Your name'}
-                  style={{ ...inputStyle, flex:1, marginBottom:0 }}
-                />
-                <button onClick={saveName} style={btnStyle}>{ar ? 'متابعة' : 'Continue'}</button>
-              </div>
-              {nameMsg && <div style={{ marginTop:'1rem', fontFamily:'Cormorant Garamond,serif', fontStyle:'italic', color:'#c19f7c', textAlign:'center', fontSize:'1.1rem' }}>{nameMsg}</div>}
-            </div>
-
-            {/* ── DATE + COUNTDOWN + MAP ── */}
-            <div style={card}>
-              <div style={{ display:'flex', justifyContent:'space-between', gap:'1.4rem', marginBottom:'1.2rem', flexWrap:'wrap' }}>
-                <div style={{ flex:1, textAlign:'center', minWidth:120 }}>
-                  <div style={{ fontSize:'.6rem', textTransform:'uppercase', letterSpacing:'.18em', color:'#c19f7c', marginBottom:5 }}>{ar ? 'تاريخ الزفاف' : 'Wedding Date'}</div>
-                  <div style={{ fontFamily:'Cormorant Garamond,serif', fontSize:'1.25rem', color:'#f5e6d3' }}>{ar ? '١٧ مارس ٢٠٢٧' : 'March 17, 2027'}</div>
-                </div>
-                <div style={{ flex:1, textAlign:'center', minWidth:120 }}>
-                  <div style={{ fontSize:'.6rem', textTransform:'uppercase', letterSpacing:'.18em', color:'#c19f7c', marginBottom:5 }}>{ar ? 'المكان' : 'Location'}</div>
-                  <div style={{ fontFamily:'Cormorant Garamond,serif', fontSize:'1.25rem', color:'#f5e6d3' }}>{ar ? 'طنطا، مصر' : 'Tanta, Egypt'}</div>
-                </div>
-              </div>
-
-              <div style={{ textAlign:'center', color:'#c19f7c', letterSpacing:'.5em', fontSize:'.78rem', margin:'.9rem 0', opacity:.7 }}>✦ &nbsp;✦ &nbsp;✦</div>
-
-              <p style={{ fontFamily:'Cormorant Garamond,serif', fontStyle:'italic', fontSize:'1rem', color:'#c19f7c', textAlign:'center', marginBottom:'.6rem' }}>
-                {ar ? 'العد التنازلي ليومنا المميز' : 'Counting down to our big day'}
-              </p>
-              <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10 }}>
-                {[
-                  { val: countdown.d, lbl: ar ? 'أيام' : 'Days' },
-                  { val: countdown.h, lbl: ar ? 'ساعات' : 'Hours' },
-                  { val: countdown.m, lbl: ar ? 'دقائق' : 'Minutes' },
-                  { val: countdown.s, lbl: ar ? 'ثواني' : 'Seconds' },
-                ].map(({ val, lbl }) => (
-                  <div key={lbl} style={{ background:'rgba(97,63,33,0.3)', border:'0.5px solid rgba(193,159,124,.28)', borderRadius:14, padding:'1rem .4rem', textAlign:'center' }}>
-                    <span style={{ display:'block', fontFamily:'Cormorant Garamond,serif', fontSize:'2.4rem', fontWeight:600, color:'#c19f7c', lineHeight:1 }}>{val}</span>
-                    <span style={{ display:'block', fontSize:'.55rem', textTransform:'uppercase', letterSpacing:'.13em', color:'#a67d5f', marginTop:4 }}>{lbl}</span>
+          {/* ── Single flowing invitation column (not stacked form cards) ── */}
+          <div
+            style={{
+              width: '100%',
+              maxWidth: 672,
+              margin: '0 auto',
+              padding: 'clamp(1.25rem, 4vw, 2rem) clamp(0.75rem, 3vw, 1.15rem) 3.5rem',
+              direction: ar ? 'rtl' : 'ltr',
+            }}
+          >
+            <div
+              style={{
+                borderRadius: 44,
+                padding: 'clamp(1.85rem, 4.5vw, 3rem) clamp(1.1rem, 3.5vw, 2rem)',
+                background:
+                  'linear-gradient(168deg, rgba(52, 22, 38, 0.42) 0%, rgba(16, 6, 12, 0.55) 42%, rgba(24, 10, 18, 0.48) 100%)',
+                border: '1px solid rgba(245, 200, 215, 0.08)',
+                boxShadow: '0 40px 120px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255, 210, 220, 0.05)',
+                backdropFilter: 'blur(26px) saturate(1.1)',
+              }}
+            >
+              <RevealSection delay={0}>
+                <div ref={nameCardRef}>
+                  <div style={cardTitle}>{ar ? 'أهلاً، ما اسمك؟' : "Welcome, what's your name?"}</div>
+                  <div style={cardSub}>{ar ? 'سنستخدمه في كل أقسام الدعوة' : "We'll use it across the invitation"}</div>
+                  <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'stretch' }}>
+                    <input
+                      className="inv-flow-input"
+                      value={guestName}
+                      onChange={e => setGuestName(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && saveName()}
+                      placeholder={ar ? 'اسمك' : 'Your name'}
+                      style={{ ...inputStyle, flex: 1, minWidth: 200, marginBottom: 0, borderRadius: 999 }}
+                    />
+                    <button onClick={saveName} style={{ ...btnStyle, borderRadius: 999 }}>{ar ? 'متابعة' : 'Continue'}</button>
                   </div>
-                ))}
-              </div>
+                  {nameMsg && (
+                    <div
+                      style={{
+                        marginTop: '1.1rem',
+                        fontFamily: 'Cormorant Garamond,serif',
+                        fontStyle: 'italic',
+                        color: '#d4a0b8',
+                        textAlign: 'center',
+                        fontSize: '1.1rem',
+                        animation: 'fadeIn 0.6s ease',
+                      }}
+                    >
+                      {nameMsg}
+                    </div>
+                  )}
+                </div>
+              </RevealSection>
 
-              <div style={{ textAlign:'center', color:'#c19f7c', letterSpacing:'.5em', fontSize:'.78rem', margin:'1.4rem 0 .8rem', opacity:.7 }}>✦ &nbsp;✦ &nbsp;✦</div>
-              <p style={{ fontFamily:'Cormorant Garamond,serif', fontStyle:'italic', fontSize:'1rem', color:'#c19f7c', textAlign:'center', marginBottom:'.8rem' }}>
-                {ar ? 'قاعة الأفراح' : 'Wedding Venue'}
-              </p>
-              <div style={{ borderRadius:12, overflow:'hidden', border:'0.5px solid rgba(201,121,140,0.22)', marginTop:'.4rem' }}>
-                <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d55215.78!2d30.9985!3d30.7987!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14f7c4dc6e7b7b33%3A0x2bb5c0ca2c495e05!2sTanta%2C+Gharbia+Governorate!5e0!3m2!1sen!2seg!4v1234567890"
-                  width="100%"
-                  height="220"
-                  style={{ border:'1px solid rgba(193,159,124,.25)', display:'block', filter:'invert(0.85) hue-rotate(200deg)' }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                />
-              </div>
-            </div>
+              <FlowDivider />
 
-            {/* ── RSVP ── */}
-            <div style={card}>
-              <div style={cardTitle}>{ar ? 'هل ستحضر؟' : 'Will you attend?'}</div>
-              <div style={cardSub}>{ar ? 'أخبرنا — سيتم حفظ إجابتك' : 'Let us know — your answer is saved'}</div>
-              <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-                {[
-                  { ans:'yes',   icon:'🎉', en:"Yes, I'll be there!", ar:'نعم، سأكون هناك!' },
-                  { ans:'maybe', icon:'🤞', en:'I hope to make it',   ar:'أتمنى أن أكون هناك' },
-                  { ans:'no',    icon:'💔', en:"Unfortunately I can't", ar:'للأسف لن أتمكن' },
-                ].map(({ ans, icon, en, ar: arTxt }) => (
-                  <button
-                    key={ans}
-                    onClick={() => submitRsvp(ans)}
-                    style={{ padding:'.85rem 1.4rem', border: rsvpAnswer===ans ? '1px solid rgba(193,159,124,.3)' : '1px solid rgba(193,159,124,.25)', borderRadius:10, background: rsvpAnswer===ans ? '#613F21' : 'transparent', color: rsvpAnswer===ans ? '#f5e6d3' : '#c19f7c', fontFamily:'Montserrat,sans-serif', fontSize:'.78rem', letterSpacing:'.08em', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:10, transition:'all .2s' }}
+              <RevealSection delay={80}>
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1.4rem', marginBottom: '1.4rem', flexWrap: 'wrap' }}>
+                    <div style={{ flex: 1, textAlign: 'center', minWidth: 120 }}>
+                      <div style={{ fontSize: '.6rem', textTransform: 'uppercase', letterSpacing: '.18em', color: '#d4a0b8', marginBottom: 6 }}>{ar ? 'تاريخ الزفاف' : 'Wedding Date'}</div>
+                      <div style={{ fontFamily: 'Cormorant Garamond,serif', fontSize: '1.28rem', color: '#faf2f5' }}>{ar ? '١٧ مارس ٢٠٢٧' : 'March 17, 2027'}</div>
+                    </div>
+                    <div style={{ flex: 1, textAlign: 'center', minWidth: 120 }}>
+                      <div style={{ fontSize: '.6rem', textTransform: 'uppercase', letterSpacing: '.18em', color: '#d4a0b8', marginBottom: 6 }}>{ar ? 'المكان' : 'Location'}</div>
+                      <div style={{ fontFamily: 'Cormorant Garamond,serif', fontSize: '1.28rem', color: '#faf2f5' }}>{ar ? 'طنطا، مصر' : 'Tanta, Egypt'}</div>
+                    </div>
+                  </div>
+
+                  <p style={{ fontFamily: 'Cormorant Garamond,serif', fontStyle: 'italic', fontSize: '1.02rem', color: '#d4a0b8', textAlign: 'center', marginBottom: '1.1rem', opacity: 0.95 }}>
+                    {ar ? 'العد التنازلي ليومنا المميز' : 'Counting down to our big day'}
+                  </p>
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      justifyContent: 'center',
+                      alignItems: 'baseline',
+                      gap: 'clamp(0.35rem, 2vw, 1rem)',
+                      marginBottom: '1.5rem',
+                    }}
                   >
-                    <span>{icon}</span> {lang==='ar' ? arTxt : en}
-                  </button>
-                ))}
-              </div>
-              {rsvpMsg && <div style={{ marginTop:'1rem', fontFamily:'Cormorant Garamond,serif', fontStyle:'italic', color:'#c19f7c', textAlign:'center', fontSize:'1.1rem' }}>{rsvpMsg}</div>}
-            </div>
-
-            {/* ── MESSAGE ── */}
-            <div style={card}>
-              <div style={cardTitle}>{ar ? 'اكتب رسالة' : 'Write a message'}</div>
-              <div style={cardSub}>{ar ? 'شارك أمنياتك مع مروان ودينا' : 'Share your wishes with Marwan & Dina'}</div>
-              <textarea
-                value={msgText}
-                onChange={e => setMsgText(e.target.value)}
-                placeholder={ar ? 'اكتب رسالتك هنا...' : 'Write your heartfelt message...'}
-                style={{ width:'100%', border:'1px solid rgba(193,159,124,.35)', borderRadius:10, padding:'.85rem 1rem', fontFamily:'Cormorant Garamond,serif', fontSize:'1.05rem', color:'#f5e6d3', background:'rgba(41,27,18,.8)', resize:'vertical', minHeight:100, outline:'none', lineHeight:1.6 }}
-              />
-              <div style={{ display:'flex', alignItems:'center', gap:'1rem', flexWrap:'wrap', marginTop:'.8rem' }}>
-                <button onClick={submitMessage} style={btnStyle}>{ar ? 'أرسل التهاني' : 'Send Wishes'}</button>
-                {msgSent && <span style={{ fontFamily:'Cormorant Garamond,serif', fontStyle:'italic', color:'#c19f7c', fontSize:'1rem' }}>{ar ? '💌 تم! سيسعدهم قراءة رسالتك.' : '💌 Sent! They\'ll love reading this.'}</span>}
-              </div>
-
-              {/* Approved messages wall */}
-              {messages.length > 0 && (
-                <>
-                  <div style={{ fontSize:'.65rem', textTransform:'uppercase', letterSpacing:'.16em', color:'#c19f7c', marginTop:'1.8rem', marginBottom:'.8rem' }}>
-                    {ar ? 'تهاني الضيوف' : 'Guest Wishes'}
-                  </div>
-                  <div style={{ display:'flex', flexDirection:'column', gap:10, maxHeight:310, overflowY:'auto', paddingRight:4 }}>
-                    {messages.map(m => (
-                      <div key={m.id} style={{ background:'rgba(97,63,33,0.25)', border:'0.5px solid rgba(193,159,124,.2)', borderRadius:14, padding:'.85rem 1rem' }}>
-                        <div style={{ fontSize:'.65rem', textTransform:'uppercase', letterSpacing:'.12em', color:'#c19f7c', marginBottom:4 }}>{m.name}</div>
-                        <div style={{ fontFamily:'Cormorant Garamond,serif', fontSize:'1rem', color:'#f5e6d3', lineHeight:1.55 }}>{m.message}</div>
-                      </div>
+                    {[
+                      { val: countdown.d, lbl: ar ? 'أيام' : 'Days' },
+                      { val: countdown.h, lbl: ar ? 'ساعات' : 'Hours' },
+                      { val: countdown.m, lbl: ar ? 'دقائق' : 'Minutes' },
+                      { val: countdown.s, lbl: ar ? 'ثواني' : 'Seconds' },
+                    ].map(({ val, lbl }, i) => (
+                      <Fragment key={lbl}>
+                        {i > 0 && (
+                          <span style={{ color: 'rgba(212, 160, 184, 0.35)', fontSize: '1.4rem', fontWeight: 200, lineHeight: 1, padding: '0 0.15rem' }} aria-hidden>
+                            ·
+                          </span>
+                        )}
+                        <div style={{ textAlign: 'center', minWidth: '3.2rem' }}>
+                          <span
+                            style={{
+                              display: 'block',
+                              fontFamily: 'Cormorant Garamond,serif',
+                              fontSize: 'clamp(2rem, 7vw, 2.85rem)',
+                              fontWeight: 500,
+                              color: '#f2dfe8',
+                              lineHeight: 1,
+                              fontVariantNumeric: 'tabular-nums',
+                              transition: 'color 0.3s ease',
+                            }}
+                          >
+                            {val}
+                          </span>
+                          <span style={{ display: 'block', fontSize: '.58rem', textTransform: 'uppercase', letterSpacing: '.14em', color: '#d4a0b8', marginTop: 8, opacity: 0.85 }}>{lbl}</span>
+                        </div>
+                      </Fragment>
                     ))}
                   </div>
-                </>
-              )}
-            </div>
 
-            {/* ── DRAWING CANVAS ── */}
-            <div style={card}>
-              <div style={cardTitle}>{ar ? 'ارسم لنا شيئاً' : 'Draw something for us'}</div>
-              <div style={cardSub}>{ar ? 'ستُحفظ للأبد' : 'Saved forever for Marwan & Dina'}</div>
-
-              <div style={{ border:'1px solid rgba(193,159,124,.25)', borderRadius:14, overflow:'hidden', background:'#fff', position:'relative' }}>
-                <canvas ref={canvasRef} width={660} height={280} style={{ display:'block', width:'100%', height:'auto' }} />
-              </div>
-
-              {/* Toolbar */}
-              <div style={{ display:'flex', flexDirection:'column', gap:10, marginTop:'.9rem' }}>
-                <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
-                  {colors.map(c => (
-                    <div
-                      key={c}
-                      onClick={() => { setDrawColor(c); setIsEraser(false) }}
-                      style={{ width:22, height:22, borderRadius:'50%', background:c, border: drawColor===c && !isEraser ? '2.5px solid #f5e6d3' : c==='#f5e6d3' ? '1px solid #ddd' : '2px solid transparent', cursor:'pointer', transition:'transform .15s', flexShrink:0 }}
+                  <p style={{ fontFamily: 'Cormorant Garamond,serif', fontStyle: 'italic', fontSize: '1rem', color: '#d4a0b8', textAlign: 'center', marginBottom: '.75rem' }}>
+                    {ar ? 'قاعة الأفراح' : 'Wedding Venue'}
+                  </p>
+                  <div style={{ borderRadius: 22, overflow: 'hidden', marginTop: '.25rem', boxShadow: '0 16px 48px rgba(0,0,0,0.28)' }}>
+                    <iframe
+                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d55215.78!2d30.9985!3d30.7987!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14f7c4dc6e7b7b33%3A0x2bb5c0ca2c495e05!2sTanta%2C+Gharbia+Governorate!5e0!3m2!1sen!2seg!4v1234567890"
+                      width="100%"
+                      height="220"
+                      style={{ border: 'none', display: 'block', filter: 'grayscale(0.2) contrast(0.9) sepia(0.25) hue-rotate(285deg) saturate(0.75) brightness(0.92)' }}
+                      allowFullScreen
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
                     />
-                  ))}
+                  </div>
                 </div>
-                <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
-                  <input type="range" min={2} max={22} value={brushSize} onChange={e => setBrushSize(Number(e.target.value))} style={{ flex:1, accentColor:'#613F21', minWidth:80 }} />
-                  <button onClick={() => setIsEraser(e => !e)} style={{ ...toolBtn, background: isEraser ? 'rgba(97,63,33,0.4)' : 'transparent', borderColor: isEraser ? '#c19f7c' : 'rgba(193,159,124,.35)', color: isEraser ? '#f5e6d3' : '#c19f7c' }}>
-                    {ar ? 'ممحاة ✏️' : '✏️ Eraser'}
-                  </button>
-                  <button onClick={undoCanvas} style={toolBtn}>{ar ? 'تراجع ↩' : '↩ Undo'}</button>
-                  <button onClick={clearCanvas} style={toolBtn}>{ar ? 'مسح 🗑' : '🗑 Clear'}</button>
+              </RevealSection>
+
+              <FlowDivider />
+
+              <RevealSection delay={140}>
+                <div>
+                  <div style={cardTitle}>{ar ? 'هل ستحضر؟' : 'Will you attend?'}</div>
+                  <div style={cardSub}>{ar ? 'أخبرنا — سيتم حفظ إجابتك' : 'Let us know — your answer is saved'}</div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      flexWrap: 'wrap',
+                      gap: 12,
+                      justifyContent: 'center',
+                    }}
+                  >
+                    {[
+                      { ans: 'yes', icon: '🎉', en: "Yes, I'll be there!", ar: 'نعم، سأكون هناك!' },
+                      { ans: 'maybe', icon: '🤞', en: 'I hope to make it', ar: 'أتمنى أن أكون هناك' },
+                      { ans: 'no', icon: '💔', en: "Unfortunately I can't", ar: 'للأسف لن أتمكن' },
+                    ].map(({ ans, icon, en, ar: arTxt }) => (
+                      <button
+                        key={ans}
+                        onClick={() => submitRsvp(ans)}
+                        style={{
+                          flex: '1 1 140px',
+                          padding: '1rem 1rem',
+                          border: rsvpAnswer === ans ? '1px solid rgba(255, 200, 215, 0.38)' : '1px solid rgba(232, 180, 200, 0.12)',
+                          borderRadius: 999,
+                          background: rsvpAnswer === ans ? 'linear-gradient(135deg, #8b3a56 0%, #5c1a32 100%)' : 'rgba(255, 245, 248, 0.03)',
+                          color: rsvpAnswer === ans ? '#faf2f5' : '#e8c4d4',
+                          fontFamily: 'Montserrat,sans-serif',
+                          fontSize: '.78rem',
+                          letterSpacing: '.05em',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 10,
+                          transition: 'transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, background 0.25s ease',
+                          boxShadow: rsvpAnswer === ans ? '0 12px 36px rgba(60, 18, 36, 0.4)' : 'none',
+                        }}
+                      >
+                        <span style={{ fontSize: '1.1rem' }}>{icon}</span> {lang === 'ar' ? arTxt : en}
+                      </button>
+                    ))}
+                  </div>
+                  {rsvpMsg && (
+                    <div style={{ marginTop: '1.1rem', fontFamily: 'Cormorant Garamond,serif', fontStyle: 'italic', color: '#d4a0b8', textAlign: 'center', fontSize: '1.1rem', animation: 'fadeIn 0.55s ease' }}>{rsvpMsg}</div>
+                  )}
                 </div>
-              </div>
+              </RevealSection>
 
-              <div style={{ display:'flex', alignItems:'center', gap:'1rem', flexWrap:'wrap', marginTop:'1rem' }}>
-                <button onClick={submitDrawing} style={btnStyle}>{ar ? 'أرسل الرسمة' : 'Submit Drawing'}</button>
-                {drawSent && <span style={{ fontFamily:'Cormorant Garamond,serif', fontStyle:'italic', color:'#c19f7c', fontSize:'1rem' }}>{ar ? '🎨 رائع! تمّ إرسالها.' : '🎨 Beautiful! Submitted for review.'}</span>}
-              </div>
-            </div>
+              <FlowDivider />
 
-            {/* ── APPROVED DRAWINGS GALLERY ── */}
-            {drawings.length > 0 && (
-              <div style={card}>
-                <div style={cardTitle}>{ar ? 'معرض لوحات الضيوف' : 'Guest Artwork Gallery'}</div>
-                <div style={cardSub}>{ar ? 'صوّت للمفضلة' : 'Vote for your favourites'}</div>
-                <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(160px,1fr))', gap:12 }}>
-                  {drawings.map((d, idx) => (
-                    <div key={d.id} style={{ border:'0.5px solid rgba(193,159,124,.22)', borderRadius:14, overflow:'hidden', background:'#fff', position:'relative', transition:'transform .2s', cursor:'default' }}>
-                      {d.rank && (
-                        <div style={{ position:'absolute', top:8, left:8, width:26, height:26, borderRadius:'50%', background:'#c19f7c', color:'#1a1410', fontFamily:'Cormorant Garamond,serif', fontSize:'.85rem', fontWeight:600, display:'flex', alignItems:'center', justifyContent:'center' }}>
-                          {d.rank}
-                        </div>
-                      )}
-                      <img src={d.image_data} alt={d.name} style={{ width:'100%', aspectRatio:'4/3', objectFit:'cover', display:'block' }} />
-                      <div style={{ padding:'.55rem .8rem', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                        <span style={{ fontSize:'.65rem', color:'#a67d5f', textTransform:'uppercase', letterSpacing:'.1em', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:80 }}>{d.name}</span>
-                        <button onClick={() => voteDrawing(d.id)} style={{ display:'flex', alignItems:'center', gap:5, padding:'.3rem .65rem', border:'0.5px solid rgba(193,159,124,.35)', borderRadius:20, background:'transparent', color:'#c19f7c', fontSize:'.7rem', fontFamily:'Montserrat,sans-serif', cursor:'pointer' }}>
-                          ♥ {d.votes || 0}
-                        </button>
+              <RevealSection delay={200}>
+                <div>
+                  <div style={cardTitle}>{ar ? 'اكتب رسالة' : 'Write a message'}</div>
+                  <div style={cardSub}>{ar ? 'شارك أمنياتك مع مروان ودينا' : 'Share your wishes with Marwan & Dina'}</div>
+                  <textarea
+                    className="inv-flow-input"
+                    value={msgText}
+                    onChange={e => setMsgText(e.target.value)}
+                    placeholder={ar ? 'اكتب رسالتك هنا...' : 'Write your heartfelt message...'}
+                    style={{
+                      width: '100%',
+                      border: '1px solid rgba(232, 180, 200, 0.16)',
+                      borderRadius: 22,
+                      padding: '1.1rem 1.2rem',
+                      fontFamily: 'Cormorant Garamond,serif',
+                      fontSize: '1.05rem',
+                      color: '#faf2f5',
+                      background: 'rgba(8, 3, 8, 0.35)',
+                      resize: 'vertical',
+                      minHeight: 120,
+                      outline: 'none',
+                      lineHeight: 1.65,
+                      boxShadow: 'inset 0 2px 14px rgba(0,0,0,0.12)',
+                    }}
+                  />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+                    <button onClick={submitMessage} style={{ ...btnStyle, borderRadius: 999 }}>{ar ? 'أرسل التهاني' : 'Send Wishes'}</button>
+                    {msgSent && (
+                      <span style={{ fontFamily: 'Cormorant Garamond,serif', fontStyle: 'italic', color: '#d4a0b8', fontSize: '1rem', animation: 'fadeIn 0.5s ease' }}>
+                        {ar ? '💌 تم! سيسعدهم قراءة رسالتك.' : "💌 Sent! They'll love reading this."}
+                      </span>
+                    )}
+                  </div>
+
+                  {messages.length > 0 && (
+                    <>
+                      <div style={{ fontSize: '.65rem', textTransform: 'uppercase', letterSpacing: '.16em', color: '#d4a0b8', marginTop: '2rem', marginBottom: '.85rem' }}>{ar ? 'تهاني الضيوف' : 'Guest Wishes'}</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 310, overflowY: 'auto', paddingRight: 4 }}>
+                        {messages.map(m => (
+                          <div
+                            key={m.id}
+                            style={{
+                              padding: '1rem 0',
+                              borderBottom: '1px solid rgba(232, 180, 200, 0.1)',
+                            }}
+                          >
+                            <div style={{ fontSize: '.65rem', textTransform: 'uppercase', letterSpacing: '.12em', color: '#d4a0b8', marginBottom: 6 }}>{m.name}</div>
+                            <div style={{ fontFamily: 'Cormorant Garamond,serif', fontSize: '1.02rem', color: '#faf2f5', lineHeight: 1.58 }}>{m.message}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </RevealSection>
+
+              <FlowDivider />
+
+              <RevealSection delay={260}>
+                <div>
+                  <div style={cardTitle}>{ar ? 'ارسم لنا شيئاً' : 'Draw something for us'}</div>
+                  <div style={cardSub}>{ar ? 'ستُحفظ للأبد' : 'Saved forever for Marwan & Dina'}</div>
+
+                  <div style={{ borderRadius: 24, overflow: 'hidden', background: '#fff', position: 'relative', boxShadow: '0 20px 50px rgba(0,0,0,0.22)' }}>
+                    <canvas ref={canvasRef} width={660} height={280} style={{ display: 'block', width: '100%', height: 'auto' }} />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: '1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                      {colors.map(c => (
+                        <div
+                          key={c}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault()
+                              setDrawColor(c)
+                              setIsEraser(false)
+                            }
+                          }}
+                          onClick={() => {
+                            setDrawColor(c)
+                            setIsEraser(false)
+                          }}
+                          style={{
+                            width: 24,
+                            height: 24,
+                            borderRadius: '50%',
+                            background: c,
+                            border: drawColor === c && !isEraser ? '2.5px solid #faf2f5' : c === '#faf2f5' ? '1px solid #ddd' : '2px solid transparent',
+                            cursor: 'pointer',
+                            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                            flexShrink: 0,
+                            boxShadow: drawColor === c && !isEraser ? '0 0 0 2px rgba(232,180,200,0.35)' : 'none',
+                          }}
+                        />
+                      ))}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                      <input type="range" min={2} max={22} value={brushSize} onChange={e => setBrushSize(Number(e.target.value))} style={{ flex: 1, accentColor: '#6b2540', minWidth: 100 }} />
+                      <button onClick={() => setIsEraser(e => !e)} style={{ ...toolBtn, background: isEraser ? 'rgba(107,37,64,0.4)' : 'transparent', borderColor: isEraser ? '#d4a0b8' : 'rgba(228,175,195,.35)', color: isEraser ? '#faf2f5' : '#d4a0b8' }}>
+                        {ar ? 'ممحاة ✏️' : '✏️ Eraser'}
+                      </button>
+                      <button onClick={undoCanvas} style={toolBtn}>{ar ? 'تراجع ↩' : '↩ Undo'}</button>
+                      <button onClick={clearCanvas} style={toolBtn}>{ar ? 'مسح 🗑' : '🗑 Clear'}</button>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginTop: '1.1rem' }}>
+                    <button onClick={submitDrawing} style={{ ...btnStyle, borderRadius: 999 }}>{ar ? 'أرسل الرسمة' : 'Submit Drawing'}</button>
+                    {drawSent && (
+                      <span style={{ fontFamily: 'Cormorant Garamond,serif', fontStyle: 'italic', color: '#d4a0b8', fontSize: '1rem', animation: 'fadeIn 0.5s ease' }}>
+                        {ar ? '🎨 رائع! تمّ إرسالها.' : '🎨 Beautiful! Submitted for review.'}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </RevealSection>
+
+              {drawings.length > 0 && (
+                <>
+                  <FlowDivider />
+                  <RevealSection delay={120}>
+                    <div>
+                      <div style={cardTitle}>{ar ? 'معرض لوحات الضيوف' : 'Guest Artwork Gallery'}</div>
+                      <div style={cardSub}>{ar ? 'صوّت للمفضلة' : 'Vote for your favourites'}</div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(152px, 1fr))', gap: 14 }}>
+                        {drawings.map(d => (
+                          <div
+                            key={d.id}
+                            className="gallery-tile"
+                            style={{
+                              borderRadius: 20,
+                              overflow: 'hidden',
+                              background: '#fff',
+                              position: 'relative',
+                              cursor: 'default',
+                              boxShadow: '0 12px 32px rgba(0,0,0,0.14)',
+                              transition: 'transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease',
+                            }}
+                          >
+                            {d.rank && (
+                              <div
+                                style={{
+                                  position: 'absolute',
+                                  top: 8,
+                                  left: 8,
+                                  width: 26,
+                                  height: 26,
+                                  borderRadius: '50%',
+                                  background: 'linear-gradient(145deg, #e8b4c4, #c9788c)',
+                                  color: '#14080c',
+                                  fontFamily: 'Cormorant Garamond,serif',
+                                  fontSize: '.85rem',
+                                  fontWeight: 600,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                                }}
+                              >
+                                {d.rank}
+                              </div>
+                            )}
+                            <img src={d.image_data} alt={d.name} style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', display: 'block' }} />
+                            <div style={{ padding: '.55rem .85rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(250,242,245,0.97)' }}>
+                              <span style={{ fontSize: '.65rem', color: '#7a5060', textTransform: 'uppercase', letterSpacing: '.1em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 80 }}>{d.name}</span>
+                              <button
+                                onClick={() => voteDrawing(d.id)}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: 5,
+                                  padding: '.32rem .7rem',
+                                  border: '1px solid rgba(200, 140, 160, 0.35)',
+                                  borderRadius: 999,
+                                  background: 'transparent',
+                                  color: '#8b3a56',
+                                  fontSize: '.7rem',
+                                  fontFamily: 'Montserrat,sans-serif',
+                                  cursor: 'pointer',
+                                  transition: 'background 0.2s ease',
+                                }}
+                              >
+                                ♥ {d.votes || 0}
+                              </button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                  </RevealSection>
+                </>
+              )}
 
-            {/* ── FOOTER ── */}
-            <footer style={{ textAlign:'center', padding:'2.5rem 1rem', width:'100%' }}>
-              <div style={{ width:50, height:1, background:'#c19f7c', margin:'1.2rem auto', opacity:.55 }} />
-              <p style={{ fontFamily:'Cormorant Garamond,serif', fontStyle:'italic', fontSize:'1.05rem', color:'#c19f7c', letterSpacing:'.04em' }}>
-                {ar ? 'بكل محبة، مروان ودينا' : 'With love, Marwan & Dina'}
-              </p>
-              <div style={{ textAlign:'center', color:'#c19f7c', letterSpacing:'.5em', fontSize:'.78rem', margin:'.8rem 0 0', opacity:.7 }}>✦ &nbsp;✦ &nbsp;✦</div>
-            </footer>
+              <FlowDivider />
+
+              <RevealSection delay={100}>
+                <footer style={{ textAlign: 'center', padding: '0.5rem 0.5rem 0.25rem', width: '100%' }}>
+                  <div style={{ width: 56, height: 1, background: 'linear-gradient(90deg, transparent, rgba(212,160,184,0.5), transparent)', margin: '0.5rem auto 1.25rem' }} />
+                  <p style={{ fontFamily: 'Cormorant Garamond,serif', fontStyle: 'italic', fontSize: '1.08rem', color: '#d4a0b8', letterSpacing: '.04em' }}>{ar ? 'بكل محبة، مروان ودينا' : 'With love, Marwan & Dina'}</p>
+                  <div style={{ textAlign: 'center', color: 'rgba(212,160,184,0.55)', letterSpacing: '.45em', fontSize: '.72rem', margin: '.85rem 0 0' }}>✦</div>
+                </footer>
+              </RevealSection>
+            </div>
           </div>
         </div>
       )}
@@ -550,25 +812,33 @@ export default function Home() {
         @keyframes fadeDown { from{opacity:0;transform:translateY(-40px)} to{opacity:1;transform:translateY(0)} }
         @keyframes fadeIn   { from{opacity:0} to{opacity:1} }
         @keyframes slideUp  { from{opacity:0;transform:translateY(60px)} to{opacity:1;transform:translateY(0)} }
+        .inv-flow-input { transition: border-color 0.28s ease, box-shadow 0.28s ease; }
+        .inv-flow-input:focus {
+          border-color: rgba(232, 180, 200, 0.45) !important;
+          box-shadow: inset 0 2px 12px rgba(0,0,0,0.12), 0 0 0 1px rgba(232, 180, 200, 0.14) !important;
+        }
+        @media (hover: hover) {
+          .gallery-tile:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 20px 48px rgba(0,0,0,0.2);
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .reveal-section { opacity: 1 !important; transform: none !important; transition: none !important; }
+          .gallery-tile { transition: none !important; }
+          .gallery-tile:hover { transform: none !important; }
+        }
       `}</style>
     </div>
   )
 }
 
 /* ── Shared style objects ── */
-const card: React.CSSProperties = {
-  background: 'rgba(41,27,18,0.65)',
-  border: '1px solid rgba(193,159,124,0.25)',
-  borderRadius: 16,
-  padding: '2.2rem 2.4rem',
-  backdropFilter: 'blur(12px)',
-  boxShadow: '0 16px 60px rgba(0,0,0,0.4)',
-}
 const cardTitle: React.CSSProperties = {
   fontFamily: 'Cormorant Garamond, serif',
   fontSize: '1.55rem',
   fontWeight: 400,
-  color: '#f5e6d3',
+  color: '#faf2f5',
   letterSpacing: '.06em',
   lineHeight: 1.2,
 }
@@ -576,41 +846,46 @@ const cardSub: React.CSSProperties = {
   fontSize: '.68rem',
   textTransform: 'uppercase',
   letterSpacing: '.18em',
-  color: '#c19f7c',
+  color: '#d4a0b8',
   marginTop: 3,
   marginBottom: '1.2rem',
 }
 const inputStyle: React.CSSProperties = {
   width: '100%',
-  padding: '.85rem 1.2rem',
-  border: '1px solid rgba(193,159,124,.4)',
-  borderRadius: 10,
+  padding: '0.95rem 1.25rem',
+  border: '1px solid rgba(232, 180, 200, 0.22)',
+  borderRadius: 14,
   fontFamily: 'Montserrat, sans-serif',
   fontSize: '.88rem',
-  color: '#f5e6d3',
-  background: 'rgba(41,27,18,.8)',
+  color: '#faf2f5',
+  background: 'rgba(12, 5, 10, 0.55)',
   outline: 'none',
   marginBottom: 12,
+  boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.2)',
+  transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
 }
 const btnStyle: React.CSSProperties = {
-  padding: '.78rem 2.2rem',
-  background: '#613F21',
-  color: '#f5e6d3',
-  border: '1px solid rgba(193,159,124,.3)',
-  borderRadius: 10,
+  padding: '.82rem 2.35rem',
+  background: 'linear-gradient(135deg, #8b3a56 0%, #5c1a32 55%, #4a1528 100%)',
+  color: '#faf2f5',
+  border: '1px solid rgba(255, 200, 215, 0.22)',
+  borderRadius: 14,
   fontFamily: 'Montserrat, sans-serif',
   fontSize: '.74rem',
   letterSpacing: '.14em',
   cursor: 'pointer',
+  boxShadow: '0 8px 28px rgba(74, 21, 40, 0.5)',
+  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
 }
 const toolBtn: React.CSSProperties = {
-  padding: '.42rem 1rem',
-  border: '1px solid rgba(193,159,124,.35)',
-  borderRadius: 8,
-  background: 'rgba(41,27,18,.6)',
-  color: '#c19f7c',
+  padding: '.48rem 1.05rem',
+  border: '1px solid rgba(232, 180, 200, 0.28)',
+  borderRadius: 999,
+  background: 'rgba(18, 6, 14, 0.55)',
+  color: '#d4a0b8',
   fontSize: '.7rem',
   fontFamily: 'Montserrat, sans-serif',
   letterSpacing: '.07em',
   cursor: 'pointer',
+  transition: 'background 0.2s ease, border-color 0.2s ease',
 }
