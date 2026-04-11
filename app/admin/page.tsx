@@ -130,7 +130,7 @@ export default function AdminPage() {
       <div style={{ background:'rgba(255,255,255,0.92)', borderBottom:'0.5px solid rgba(201,121,140,.2)', padding:'1.2rem 2rem', display:'flex', alignItems:'center', justifyContent:'space-between', position:'sticky', top:0, zIndex:10, backdropFilter:'blur(8px)' }}>
         <div>
           <h1 style={{ fontFamily:'Cormorant Garamond,serif', fontSize:'1.5rem', fontWeight:400, color:'#8a3f52' }}>Wedding Dashboard</h1>
-          <span style={{ fontSize:'.7rem', color:'#b08898', letterSpacing:'.1em', textTransform:'uppercase' }}>Marwan & Dina · March 17, 2027</span>
+          <span style={{ fontSize:'.7rem', color:'#b08898', letterSpacing:'.1em', textTransform:'uppercase' }}>Marwan & Dina · May 26, 2026</span>
         </div>
         <div style={{ display:'flex', gap:10, alignItems:'center' }}>
           <button onClick={() => loadAll(pw)} style={adminToolBtn}>🔄 Refresh</button>

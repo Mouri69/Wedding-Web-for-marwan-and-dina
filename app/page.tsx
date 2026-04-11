@@ -334,7 +334,7 @@ function FlowDivider({ accent = 'sparkle' }: { accent?: FloraAccent }) {
 }
 
 export default function Home() {
-  const WEDDING_DATE = new Date('2027-03-17T18:00:00')
+  const WEDDING_DATE = new Date('2026-05-26T18:00:00')
   const countdown = useCountdown(WEDDING_DATE)
 
   /* ── State ── */
@@ -610,7 +610,7 @@ export default function Home() {
                     Dina
                   </h1>
                   <p style={{ fontFamily:'Cormorant Garamond,serif', fontSize:'clamp(1rem,2.5vw,1.4rem)', color:'#f2dfe8', letterSpacing:'.2em', marginTop:'.7rem', fontStyle:'italic', textShadow:'0 2px 12px rgba(0,0,0,0.55)', opacity: heroStage === 'names' ? 1 : 0, transform: heroStage === 'names' ? 'translateY(0)' : 'translateY(-30px)', transition:'opacity .9s ease .35s, transform .9s ease .35s' }}>
-                    {ar ? '١٧ مارس ٢٠٢٧' : 'March 17, 2027'}
+                    {ar ? '١٧ مارس ٢٠٢٧' : 'May 26, 2026'}
                   </p>
                 </div>
               </div>
@@ -656,7 +656,7 @@ export default function Home() {
                   Dina
                 </h1>
                 <p style={{ fontFamily:'Cormorant Garamond,serif', fontSize:'clamp(1rem,2.5vw,1.4rem)', color:'#f2dfe8', letterSpacing:'.2em', marginTop:'.7rem', fontStyle:'italic', textShadow:'0 2px 12px rgba(0,0,0,0.55)', opacity: heroStage === 'names' ? 1 : 0, transform: heroStage === 'names' ? 'translateY(0)' : 'translateY(-30px)', transition:'opacity .9s ease .35s, transform .9s ease .35s' }}>
-                  {ar ? '١٧ مارس ٢٠٢٧' : 'March 17, 2027'}
+                  {ar ? '١٧ مارس ٢٠٢٧' : 'May 26, 2026'}
                 </p>
               </div>
             </div>
@@ -727,7 +727,7 @@ export default function Home() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1.4rem', marginBottom: '1.4rem', flexWrap: 'wrap' }}>
                     <div style={{ flex: 1, textAlign: 'center', minWidth: 120 }}>
                       <div style={{ fontSize: '.6rem', textTransform: 'uppercase', letterSpacing: '.18em', color: '#d4a0b8', marginBottom: 6 }}>{ar ? 'تاريخ الزفاف' : 'Wedding Date'}</div>
-                      <div style={{ fontFamily: 'Cormorant Garamond,serif', fontSize: '1.28rem', color: '#faf2f5' }}>{ar ? '١٧ مارس ٢٠٢٧' : 'March 17, 2027'}</div>
+                      <div style={{ fontFamily: 'Cormorant Garamond,serif', fontSize: '1.28rem', color: '#faf2f5' }}>{ar ? '١٧ مارس ٢٠٢٧' : 'May 26, 2026'}</div>
                     </div>
                     <div style={{ flex: 1, textAlign: 'center', minWidth: 120 }}>
                       <div style={{ fontSize: '.6rem', textTransform: 'uppercase', letterSpacing: '.18em', color: '#d4a0b8', marginBottom: 6 }}>{ar ? 'المكان' : 'Location'}</div>
