@@ -1,19 +1,25 @@
 import type { Metadata } from 'next'
 import './globals.css'
 
-/** Used so Open Graph / Twitter image URLs are absolute when sharing links. Set in production, e.g. https://your-domain.vercel.app */
+/**
+ * Crawlers need a public HTTPS URL. If NEXT_PUBLIC_SITE_URL is still localhost
+ * but the app runs on Vercel, use VERCEL_URL so og:image is not localhost.
+ */
 function getMetadataBase(): URL {
-  const fromEnv = process.env.NEXT_PUBLIC_SITE_URL
-  if (fromEnv) {
+  const vercel = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null
+  const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim()
+
+  if (raw) {
     try {
-      return new URL(fromEnv.endsWith('/') ? fromEnv.slice(0, -1) : fromEnv)
+      const url = new URL(raw.endsWith('/') ? raw.slice(0, -1) : raw)
+      const local = url.hostname === 'localhost' || url.hostname === '127.0.0.1'
+      if (local && vercel) return new URL(vercel)
+      return url
     } catch {
-      /* ignore */
+      /* fall through */
     }
   }
-  if (process.env.VERCEL_URL) {
-    return new URL(`https://${process.env.VERCEL_URL}`)
-  }
+  if (vercel) return new URL(vercel)
   return new URL('http://localhost:3000')
 }
 
@@ -23,29 +29,30 @@ const shareTitle =
 const shareDescription =
   'March 17, 2027 · ١٧ مارس ٢٠٢٧ — You are warmly invited. Marwan & Dina.'
 
+const base = getMetadataBase()
+
 export const metadata: Metadata = {
-  metadataBase: getMetadataBase(),
+  metadataBase: base,
   title: shareTitle,
   description: shareDescription,
+  /* Preview images: app/opengraph-image.png + app/twitter-image.png (+ .alt.txt).
+     Next emits absolute URLs; avoids broken links when /public paths + wrong base. */
   openGraph: {
     title: shareTitle,
     description: shareDescription,
     type: 'website',
+    url:
+      base.hostname === 'localhost' || base.hostname === '127.0.0.1'
+        ? undefined
+        : `${base.origin}/`,
     siteName: 'Marwan & Dina',
     locale: 'en_US',
     alternateLocale: ['ar_EG'],
-    images: [
-      {
-        url: '/weddingmetadata.png',
-        alt: 'Invitation to our engagement — دعوة إلى خطوبتنا — Marwan & Dina, March 17, 2027',
-      },
-    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: shareTitle,
     description: shareDescription,
-    images: ['/weddingmetadata.png'],
   },
 }
 
