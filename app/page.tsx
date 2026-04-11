@@ -550,7 +550,7 @@ export default function Home() {
      RENDER
   ══════════════════════════════════════════════════ */
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(175deg, #0c0508 0%, #1a0a12 38%, #2a101c 72%, #1f0a14 100%)' }}>
+    <div style={{ minHeight: '100dvh', background: 'linear-gradient(175deg, #0c0508 0%, #1a0a12 38%, #2a101c 72%, #1f0a14 100%)' }}>
       {/* Hidden canvas for capturing video frame */}
       <canvas ref={frameCanvasRef} style={{ display:'none' }} />
 
