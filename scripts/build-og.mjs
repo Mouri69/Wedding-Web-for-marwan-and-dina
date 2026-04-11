@@ -16,13 +16,25 @@ if (!src) {
 }
 const out = join(root, 'public', 'og.png')
 
+/** 2× the usual 1200×630 so platforms can downscale sharply; still under typical 8MB OG limits. */
+const OG_W = 2400
+const OG_H = 1260
+
 /** Match page hero gradient feel so letterboxing isn’t harsh white bars. */
 const letterbox = { r: 26, g: 10, b: 18, alpha: 1 }
 
 const buf = readFileSync(src)
 await sharp(buf)
-  .resize(400, 630, { fit: 'cover', background: letterbox, position: 'centre' })
-  .png({ compressionLevel: 9 })
+  .rotate() // respect EXIF orientation so the photo isn’t sideways or mis-cropped
+  .resize(OG_W, OG_H, {
+    fit: 'contain',
+    position: 'centre',
+    background: letterbox,
+    kernel: sharp.kernel.lanczos3,
+    withoutEnlargement: false,
+  })
+  // PNG is lossless; compressionLevel only affects file size, not visual quality
+  .png({ compressionLevel: 6, effort: 10 })
   .toFile(out)
 
 console.log('Wrote', out)
