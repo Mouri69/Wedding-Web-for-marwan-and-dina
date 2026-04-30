@@ -299,7 +299,7 @@ export default function Home() {
 
           <div style={{ borderRadius: '8px', overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}>
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3427.177883181425!2d30.936254499999997!3d30.797645499999994!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14f7cb73586b070d%3A0x5a4ecc6f12cf58ca!2z2YbYp9iv2Yog2KfZhNi52KjYryDYp9mE2LHZitin2LbZiiAtIEVsIEFiZCBTcG9ydGluZyBDbHVi!5e0!3m2!1sen!2seg!4v1777583920604!5m2!1sen!2seg" width="800" height="600" style="border:0;"  loading="lazy"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3427.177883181425!2d30.936254499999997!3d30.797645499999994!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14f7cb73586b070d%3A0x5a4ecc6f12cf58ca!2z2YbYp9iv2Yog2KfZhNi52KjYryDYp9mE2LHZitin2LbZiiAtIEVsIEFiZCBTcG9ydGluZyBDbHVi!5e0!3m2!1sen!2seg!4v1777583920604!5m2!1sen!2seg"
               width="100%"
               height="350"
               style={{ border: 0 }}
@@ -328,16 +328,24 @@ export default function Home() {
           background: 'rgba(0,0,0,0.25)' 
         }} />
         <RevealSection>
-          <img 
-            src="/ourstory-removebg.png" 
-            alt="Our Story"
-            style={{ 
-              maxWidth: 'min(500px, 80vw)', 
-              height: 'auto',
-              position: 'relative',
-              zIndex: 1
-            }}
-          />
+          <Link href="/ourstory" style={{ textDecoration: 'none', position: 'relative', zIndex: 1 }}>
+            <img 
+              src="/ourstory-removebg.png" 
+              alt="Our Story"
+              style={{ 
+                maxWidth: 'min(500px, 80vw)', 
+                height: 'auto',
+                cursor: 'pointer',
+                transition: 'transform 0.3s ease'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = 'scale(1.05)'
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = 'scale(1)'
+              }}
+            />
+          </Link>
         </RevealSection>
       </section>
 
