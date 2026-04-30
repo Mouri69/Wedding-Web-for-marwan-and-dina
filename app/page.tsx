@@ -88,7 +88,7 @@ export default function Home() {
   ]
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--ivory)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--ivory)', overflowX: 'hidden' }}>
       {/* Hero Section */}
       <section id="hero" style={{ 
         minHeight: '100vh', 
@@ -114,7 +114,7 @@ export default function Home() {
             src="/realcloth-marwandena.png" 
             alt="Marwan & Dina"
             style={{ 
-              maxWidth: 'min(500px, 600px)', 
+              maxWidth: 'min(500px, 75vw)', 
               height: 'auto',
               display: 'block',
               margin: '0 auto'
