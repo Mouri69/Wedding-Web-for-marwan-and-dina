@@ -114,7 +114,7 @@ export default function Home() {
             src="/realcloth-marwandena.png" 
             alt="Marwan & Dina"
             style={{ 
-              maxWidth: 'min(500px, 75vw)', 
+              maxWidth: 'min(500px, 90vw)', 
               height: 'auto',
               display: 'block',
               margin: '0 auto'
