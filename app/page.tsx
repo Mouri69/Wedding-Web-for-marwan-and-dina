@@ -268,8 +268,7 @@ export default function Home() {
               fontSize: '2.5rem', 
               fontWeight: 500, 
               color: 'var(--black)', 
-              marginBottom: '1rem',
-              fontFamily: 'Playfair Display, serif'
+              marginBottom: '1rem'
             }}>
               The countdown is on!
             </h2>
