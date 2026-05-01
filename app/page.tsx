@@ -300,8 +300,9 @@ export default function Home() {
   const constrainTranslate = (newTranslate: { x: number; y: number }, currentScale: number) => {
     const canvasWidth = 330
     const canvasHeight = 310
-    const maxX = (canvasWidth * (currentScale - 1)) / 2
-    const maxY = (canvasHeight * (currentScale - 1)) / 2
+    const minVisible = 50 // Keep at least 50px visible
+    const maxX = (canvasWidth * currentScale) / 2 - minVisible
+    const maxY = (canvasHeight * currentScale) / 2 - minVisible
     return {
       x: Math.max(-maxX, Math.min(maxX, newTranslate.x)),
       y: Math.max(-maxY, Math.min(maxY, newTranslate.y))
@@ -927,82 +928,91 @@ export default function Home() {
               left: 0,
               right: 0,
               bottom: 0,
-              background: '#f0ebe5',
+              background: 'rgba(0,0,0,0.5)',
               zIndex: 2147483647,
               display: 'flex',
-              flexDirection: 'column',
-              padding: '0',
-              margin: '0'
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '20px'
             }}>
-              {/* Header */}
               <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '8px 15px',
-                background: '#ffffff',
-                borderBottom: '1px solid #e0d8ce',
-                flexShrink: 0,
-                minHeight: '50px'
-              }}>
-                <h3 style={{ margin: 0, fontFamily: 'Playfair Display, serif', fontSize: '1.2rem', color: '#333' }}>Draw Something</h3>
-                <button
-                  onClick={() => {
-                    setIsDrawingModalOpen(false)
-                  }}
-                  style={{
-                    background: '#f0f0f0',
-                    border: 'none',
-                    fontSize: '1.5rem',
-                    cursor: 'pointer',
-                    padding: '8px 14px',
-                    color: '#333',
-                    borderRadius: '8px'
-                  }}
-                >
-                  ✕
-                </button>
-              </div>
-
-              {/* Canvas Area - Take most space */}
-              <div style={{
-                flex: 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: '#e8e2da',
+                background: '#f0ebe5',
+                borderRadius: '12px',
                 overflow: 'hidden',
-                padding: '10px'
+                display: 'flex',
+                flexDirection: 'column',
+                maxWidth: '100%',
+                maxHeight: '100%',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
               }}>
+                {/* Header */}
                 <div style={{
-                  transform: `translate(${translate.x}px, ${translate.y}px) scale(${scale})`,
-                  transformOrigin: 'center center'
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '8px 15px',
+                  background: '#ffffff',
+                  borderBottom: '1px solid #e0d8ce',
+                  flexShrink: 0,
+                  minHeight: '50px'
                 }}>
-                  <canvas
-                    ref={canvasRef}
-                    width={330}
-                    height={310}
-                    style={{
-                      background: '#ffffff',
-                      border: '2px solid #888888',
-                      borderRadius: '4px',
-                      touchAction: 'none',
-                      cursor: currentTool === 'eraser' ? 'cell' : 'crosshair',
-                      display: 'block',
-                      boxShadow: '0 2px 12px rgba(0,0,0,0.15)'
+                  <h3 style={{ margin: 0, fontFamily: 'Playfair Display, serif', fontSize: '1.2rem', color: '#333' }}>Draw Something</h3>
+                  <button
+                    onClick={() => {
+                      setIsDrawingModalOpen(false)
                     }}
-                    onMouseDown={startDrawing}
-                    onMouseMove={draw}
-                    onMouseUp={stopDrawing}
-                    onMouseLeave={stopDrawing}
-                    onTouchStart={startDrawing}
-                    onTouchMove={draw}
-                    onTouchEnd={stopDrawing}
-                  />
+                    style={{
+                      background: '#f0f0f0',
+                      border: 'none',
+                      fontSize: '1.5rem',
+                      cursor: 'pointer',
+                      padding: '8px 14px',
+                      color: '#333',
+                      borderRadius: '8px'
+                    }}
+                  >
+                    ✕
+                  </button>
                 </div>
-              </div>
 
-              {/* Toolbar */}
+                {/* Canvas Area */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: '#e8e2da',
+                  overflow: 'hidden',
+                  padding: '20px'
+                }}>
+                  <div style={{
+                    transform: `translate(${translate.x}px, ${translate.y}px) scale(${scale})`,
+                    transformOrigin: 'center center'
+                  }}>
+                    <canvas
+                      ref={canvasRef}
+                      width={330}
+                      height={310}
+                      style={{
+                        background: '#ffffff',
+                        border: '2px solid #888888',
+                        borderRadius: '4px',
+                        touchAction: 'none',
+                        cursor: currentTool === 'eraser' ? 'cell' : 'crosshair',
+                        display: 'block',
+                        boxShadow: '0 2px 12px rgba(0,0,0,0.15)'
+                      }}
+                      onMouseDown={startDrawing}
+                      onMouseMove={draw}
+                      onMouseUp={stopDrawing}
+                      onMouseLeave={stopDrawing}
+                      onTouchStart={startDrawing}
+                      onTouchMove={draw}
+                      onTouchEnd={stopDrawing}
+                    />
+                  </div>
+                </div>
+
+                {/* Toolbar */}
               <div style={{
                 padding: '12px',
                 background: '#ffffff',
@@ -1134,6 +1144,7 @@ export default function Home() {
                 >
                   Done
                 </button>
+              </div>
               </div>
             </div>
           )}
