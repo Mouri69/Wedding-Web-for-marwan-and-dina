@@ -232,7 +232,7 @@ export default function Home() {
       }
 
       setScale(newScale)
-      setTranslate(newTranslate)
+      setTranslate(constrainTranslate(newTranslate, newScale))
       return
     }
 
@@ -283,14 +283,29 @@ export default function Home() {
     setIsPinching(false)
   }
 
+  const resetView = () => {
+    setScale(1)
+    setTranslate({ x: 0, y: 0 })
+  }
+
   const clearCanvas = () => {
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
     if (!ctx) return
     ctx.clearRect(0, 0, canvas.width, canvas.height)
-    setScale(1)
-    setTranslate({ x: 0, y: 0 })
+    resetView()
+  }
+
+  const constrainTranslate = (newTranslate: { x: number; y: number }, currentScale: number) => {
+    const canvasWidth = 330
+    const canvasHeight = 310
+    const maxX = (canvasWidth * (currentScale - 1)) / 2
+    const maxY = (canvasHeight * (currentScale - 1)) / 2
+    return {
+      x: Math.max(-maxX, Math.min(maxX, newTranslate.x)),
+      y: Math.max(-maxY, Math.min(maxY, newTranslate.y))
+    }
   }
 
   const handleDrawingSubmit = async (e: React.FormEvent) => {
@@ -1077,6 +1092,23 @@ export default function Home() {
                   }}
                 >
                   Clear
+                </button>
+
+                {/* Reset View */}
+                <button
+                  type="button"
+                  onClick={resetView}
+                  style={{
+                    padding: '10px 16px',
+                    border: '1px solid #dddddd',
+                    background: '#ffffff',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem',
+                    color: '#333333'
+                  }}
+                >
+                  Reset View
                 </button>
 
                 {/* Done */}
