@@ -9,12 +9,13 @@ interface UploadPhoto { id:number; image_data:string; votes:number; approved:boo
 const TIMELINE_OPTIONS = [
   { key: 'meet-greet', label: 'Meet & Greet' },
   { key: 'ceremony', label: 'The Ceremony' },
-  { key: 'cocktails', label: 'Cocktails & Canapes' },
-  { key: 'photos', label: 'Photos' },
-  { key: 'cake-cutting', label: 'Cake Cutting' },
-  { key: 'dinner', label: 'Dinner' },
   { key: 'party', label: 'Party' },
-  { key: 'farewells', label: 'Farewells' },
+  { key: 'caricateur-sketch', label: 'Caricateur Sketch' },
+  { key: 'photos', label: 'Photos' },
+  { key: 'dinner', label: 'Dinner' },
+  { key: 'break', label: 'Break' },
+  { key: 'cake-cutting', label: 'Cake Cutting' },
+  { key: 'farewell', label: 'Farewell' },
 ]
 
 function encPw(password: string) {

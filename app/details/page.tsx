@@ -5,12 +5,13 @@ import Link from 'next/link'
 const TIMELINE_ITEMS = [
   { key: 'meet-greet', label: 'Meet & Greet', icon: '🤝' },
   { key: 'ceremony', label: 'The Ceremony', icon: '💍' },
-  { key: 'cocktails', label: 'Cocktails & Canapes', icon: '🍹' },
-  { key: 'photos', label: 'Photos', icon: '📸' },
-  { key: 'cake-cutting', label: 'Cake Cutting', icon: '🎂' },
-  { key: 'dinner', label: 'Dinner', icon: '🍽️' },
   { key: 'party', label: 'Party', icon: '🪩' },
-  { key: 'farewells', label: 'Farewells', icon: '👋🏽' },
+  { key: 'caricateur-sketch', label: 'Caricateur Sketch', icon: '🎨' },
+  { key: 'photos', label: 'Photos', icon: '📸' },
+  { key: 'dinner', label: 'Dinner', icon: '🍽️' },
+  { key: 'break', label: 'Break', icon: '🕑' },
+  { key: 'cake-cutting', label: 'Cake Cutting', icon: '🎂' },
+  { key: 'farewell', label: 'Farewell', icon: '👋' },
 ]
 
 function useCountdown(target: Date) {
