@@ -125,7 +125,6 @@ export default function Home() {
         justifyContent: 'center',
         textAlign: 'center',
         backgroundImage: 'url(/oil-paint.jpeg)',
-        backgroundSize: 'cover',
         backgroundPosition: 'center',
         position: 'relative',
         padding: '2rem 1rem'
@@ -234,7 +233,6 @@ export default function Home() {
         alignItems: 'center', 
         justifyContent: 'center',
         backgroundImage: 'url(/details-background.jpg)',
-        backgroundSize: 'cover',
         backgroundPosition: 'center',
         padding: '2rem 1rem'
       }}>
@@ -336,7 +334,6 @@ export default function Home() {
         alignItems: 'center', 
         justifyContent: 'center',
         backgroundImage: 'url(/ourstory-background.jpg)',
-        backgroundSize: 'cover',
         backgroundPosition: 'center',
         padding: '2rem 1rem'
       }}>
