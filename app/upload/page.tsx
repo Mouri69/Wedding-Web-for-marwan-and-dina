@@ -18,19 +18,27 @@ async function fileToDataUrl(file: File): Promise<string> {
 
 export default function UploadPage() {
   const [media, setMedia] = useState<string[]>([])
-  const [usedSlots, setUsedSlots] = useState(0)
+  const [usedSlots, setUsedSlots] = useState<number>(() => {
+    if (typeof window === 'undefined') return 0
+    const saved = Number(localStorage.getItem(USED_UPLOAD_SLOTS_KEY) || 0)
+    if (!Number.isFinite(saved) || saved < 0) return 0
+    return Math.min(MAX_FILES, saved)
+  })
   const [submitting, setSubmitting] = useState(false)
   const [status, setStatus] = useState<{ type: 'ok' | 'error'; text: string } | null>(null)
   const galleryInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    const saved = localStorage.getItem(USED_UPLOAD_SLOTS_KEY)
-    const parsed = Number(saved || 0)
-    if (Number.isFinite(parsed) && parsed > 0) {
-      setUsedSlots(Math.min(MAX_FILES, parsed))
-    }
+    const saved = Number(localStorage.getItem(USED_UPLOAD_SLOTS_KEY) || 0)
+    const parsed =
+      Number.isFinite(saved) && saved > 0 ? Math.min(MAX_FILES, saved) : 0
+    setUsedSlots(parsed)
   }, [])
+
+  useEffect(() => {
+    localStorage.setItem(USED_UPLOAD_SLOTS_KEY, String(Math.min(MAX_FILES, Math.max(0, usedSlots))))
+  }, [usedSlots])
 
   const left = useMemo(() => Math.max(0, MAX_FILES - usedSlots - media.length), [usedSlots, media.length])
 
@@ -94,7 +102,9 @@ export default function UploadPage() {
         throw new Error(data?.error || 'Upload failed')
       }
 
-      const nextUsed = Math.min(MAX_FILES, usedSlots + media.length)
+      const persisted = Number(localStorage.getItem(USED_UPLOAD_SLOTS_KEY) || usedSlots || 0)
+      const currentUsed = Number.isFinite(persisted) && persisted > 0 ? persisted : 0
+      const nextUsed = Math.min(MAX_FILES, currentUsed + media.length)
       localStorage.setItem(USED_UPLOAD_SLOTS_KEY, String(nextUsed))
       setUsedSlots(nextUsed)
       setMedia([])
