@@ -508,11 +508,10 @@ export default function Home() {
             }}>
               <p style={{ marginBottom: '1.2rem' }}>
                 As we step into this new chapter, it would mean so much to have you by our 
-                side on our special day. On this page, you’ll discover everything you need – 
-                the schedule, venue details and a few extra touches.
+                side on our special day.
               </p>
               <p>
-                Here’s to love, joy, and the beginning of our forever!
+                What started as family turned into forever.
               </p>
             </div>
             <div style={{ 
