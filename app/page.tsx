@@ -150,7 +150,7 @@ export default function Home() {
           <div style={{ marginTop: '2rem' }}>
             <p style={{ 
               fontFamily: '"Great Vibes", cursive',
-              fontSize: 'clamp(1rem, 5.5vw, 2rem)', 
+              fontSize: 'clamp(2rem, 5.5vw, 2rem)', 
               fontWeight: 400,
               color: '#FEFDFA',
               textShadow: '0 2px 8px rgba(0,0,0,0.6)',
