@@ -111,11 +111,13 @@ export default function Home() {
   const [brushSize, setBrushSize] = useState(5)
   const [startCoords, setStartCoords] = useState<{ x: number; y: number } | null>(null)
   const [canvasSnapshot, setCanvasSnapshot] = useState<ImageData | null>(null)
-  const [zoom, setZoom] = useState(1)
-  const [pan, setPan] = useState({ x: 0, y: 0 })
-  const [lastTouchDistance, setLastTouchDistance] = useState<number | null>(null)
-  const [lastTouchCenter, setLastTouchCenter] = useState<{ x: number; y: number } | null>(null)
+  const [scale, setScale] = useState(1)
+  const [translate, setTranslate] = useState({ x: 0, y: 0 })
+  const [lastScale, setLastScale] = useState(1)
+  const [lastTranslate, setLastTranslate] = useState({ x: 0, y: 0 })
   const [isPinching, setIsPinching] = useState(false)
+  const [pinchStartDistance, setPinchStartDistance] = useState(0)
+  const [pinchStartCenter, setPinchStartCenter] = useState({ x: 0, y: 0 })
 
   const loadData = async () => {
     try {
@@ -164,41 +166,12 @@ export default function Home() {
     return { x, y }
   }
 
-  const getTouchDistance = (touch1: React.Touch, touch2: React.Touch) => {
-    return Math.sqrt(Math.pow(touch2.clientX - touch1.clientX, 2) + Math.pow(touch2.clientY - touch1.clientY, 2))
+  const getTouchDistance = (t1: React.Touch, t2: React.Touch) => {
+    return Math.sqrt(Math.pow(t2.clientX - t1.clientX, 2) + Math.pow(t2.clientY - t1.clientY, 2))
   }
 
-  const getTouchCenter = (touch1: React.Touch, touch2: React.Touch) => {
-    return {
-      x: (touch1.clientX + touch2.clientX) / 2,
-      y: (touch1.clientY + touch2.clientY) / 2
-    }
-  }
-
-  const constrainPanAndZoom = (newZoom: number, newPan: { x: number; y: number }) => {
-    const canvas = canvasRef.current
-    if (!canvas) return { zoom: newZoom, pan: newPan }
-
-    const minZoom = 1
-    const maxZoom = 4
-    const clampedZoom = Math.min(Math.max(newZoom, minZoom), maxZoom)
-
-    const rect = canvas.getBoundingClientRect()
-    const containerWidth = rect.width
-    const containerHeight = rect.height
-    const canvasDisplayWidth = canvas.width * (containerWidth / canvas.width)
-    const canvasDisplayHeight = canvas.height * (containerHeight / canvas.height)
-    
-    const scaledCanvasWidth = canvasDisplayWidth * clampedZoom
-    const scaledCanvasHeight = canvasDisplayHeight * clampedZoom
-
-    const maxPanX = (scaledCanvasWidth - containerWidth) / 2
-    const maxPanY = (scaledCanvasHeight - containerHeight) / 2
-
-    const clampedPanX = Math.min(Math.max(newPan.x, -maxPanX), maxPanX)
-    const clampedPanY = Math.min(Math.max(newPan.y, -maxPanY), maxPanY)
-
-    return { zoom: clampedZoom, pan: { x: clampedPanX, y: clampedPanY } }
+  const getTouchCenter = (t1: React.Touch, t2: React.Touch) => {
+    return { x: (t1.clientX + t2.clientX) / 2, y: (t1.clientY + t2.clientY) / 2 }
   }
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
@@ -208,10 +181,15 @@ export default function Home() {
     if (!ctx) return
 
     if ('touches' in e && e.touches.length === 2) {
+      e.preventDefault()
       setIsPinching(true)
       setIsDrawing(false)
-      setLastTouchDistance(getTouchDistance(e.touches[0], e.touches[1]))
-      setLastTouchCenter(getTouchCenter(e.touches[0], e.touches[1]))
+      const t1 = e.touches[0]
+      const t2 = e.touches[1]
+      setPinchStartDistance(getTouchDistance(t1, t2))
+      setPinchStartCenter(getTouchCenter(t1, t2))
+      setLastScale(scale)
+      setLastTranslate(translate)
       return
     }
 
@@ -235,25 +213,26 @@ export default function Home() {
 
     if ('touches' in e && e.touches.length === 2) {
       e.preventDefault()
-      const distance = getTouchDistance(e.touches[0], e.touches[1])
-      const center = getTouchCenter(e.touches[0], e.touches[1])
+      if (!isPinching) return
 
-      if (lastTouchDistance && lastTouchCenter) {
-        const scaleChange = distance / lastTouchDistance
-        const rect = canvas.getBoundingClientRect()
-        const centerX = center.x - rect.left
-        const centerY = center.y - rect.top
+      const t1 = e.touches[0]
+      const t2 = e.touches[1]
+      const currentDistance = getTouchDistance(t1, t2)
+      const currentCenter = getTouchCenter(t1, t2)
 
-        const newPanX = centerX - (centerX - pan.x) * scaleChange
-        const newPanY = centerY - (centerY - pan.y) * scaleChange
+      const scaleFactor = currentDistance / pinchStartDistance
+      const newScale = Math.max(1, Math.min(lastScale * scaleFactor, 4))
 
-        const constrained = constrainPanAndZoom(zoom * scaleChange, { x: newPanX, y: newPanY })
-        setZoom(constrained.zoom)
-        setPan(constrained.pan)
+      const dx = currentCenter.x - pinchStartCenter.x
+      const dy = currentCenter.y - pinchStartCenter.y
+
+      const newTranslate = {
+        x: lastTranslate.x + dx,
+        y: lastTranslate.y + dy
       }
 
-      setLastTouchDistance(distance)
-      setLastTouchCenter(center)
+      setScale(newScale)
+      setTranslate(newTranslate)
       return
     }
 
@@ -302,8 +281,6 @@ export default function Home() {
     setStartCoords(null)
     setCanvasSnapshot(null)
     setIsPinching(false)
-    setLastTouchDistance(null)
-    setLastTouchCenter(null)
   }
 
   const clearCanvas = () => {
@@ -312,8 +289,8 @@ export default function Home() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
     ctx.clearRect(0, 0, canvas.width, canvas.height)
-    setZoom(1)
-    setPan({ x: 0, y: 0 })
+    setScale(1)
+    setTranslate({ x: 0, y: 0 })
   }
 
   const handleDrawingSubmit = async (e: React.FormEvent) => {
@@ -860,8 +837,8 @@ export default function Home() {
                     ) : (
                       <div 
                         onClick={() => {
-                          setZoom(1)
-                          setPan({ x: 0, y: 0 })
+                          setScale(1)
+                          setTranslate({ x: 0, y: 0 })
                           setIsDrawingModalOpen(true)
                         }}
                         style={{ 
@@ -883,8 +860,8 @@ export default function Home() {
                         type="button"
                         onClick={() => {
                           setCanvasImageData(null)
-                          setZoom(1)
-                          setPan({ x: 0, y: 0 })
+                          setScale(1)
+                          setTranslate({ x: 0, y: 0 })
                           setIsDrawingModalOpen(true)
                         }}
                         style={{
@@ -983,17 +960,16 @@ export default function Home() {
                 padding: '10px'
               }}>
                 <div style={{
-                  transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-                  transformOrigin: 'center center',
-                  transition: 'transform 0.05s ease-out'
+                  transform: `translate(${translate.x}px, ${translate.y}px) scale(${scale})`,
+                  transformOrigin: 'center center'
                 }}>
                   <canvas
                     ref={canvasRef}
-                    width={1200}
-                    height={900}
+                    width={330}
+                    height={310}
                     style={{
                       background: '#ffffff',
-                      border: '2px solid #aaaaaa',
+                      border: '2px solid #888888',
                       borderRadius: '4px',
                       touchAction: 'none',
                       cursor: currentTool === 'eraser' ? 'cell' : 'crosshair',
