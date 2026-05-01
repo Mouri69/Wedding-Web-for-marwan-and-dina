@@ -1,4 +1,4 @@
-import { supabase } from './supabase'
+import { getSupabase } from './supabase'
 
 // ── Types ──
 export interface RSVP {
@@ -28,7 +28,7 @@ export interface Drawing {
 
 // ── RSVPs ──
 export async function getRSVPs(): Promise<RSVP[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('rsvps')
     .select('*')
     .order('created_at', { ascending: false })
@@ -37,7 +37,7 @@ export async function getRSVPs(): Promise<RSVP[]> {
 }
 
 export async function addRSVP(name: string, answer: RSVP['answer']): Promise<RSVP> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('rsvps')
     .insert({ name, answer })
     .select()
@@ -48,7 +48,7 @@ export async function addRSVP(name: string, answer: RSVP['answer']): Promise<RSV
 
 // ── Messages ──
 export async function getMessages(): Promise<Message[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('messages')
     .select('*')
     .order('created_at', { ascending: false })
@@ -57,7 +57,7 @@ export async function getMessages(): Promise<Message[]> {
 }
 
 export async function addMessage(name: string, message: string): Promise<Message> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('messages')
     .insert({ name, message, approved: false })
     .select()
@@ -67,7 +67,7 @@ export async function addMessage(name: string, message: string): Promise<Message
 }
 
 export async function approveMessage(id: number, approved: boolean) {
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from('messages')
     .update({ approved })
     .eq('id', id)
@@ -75,7 +75,7 @@ export async function approveMessage(id: number, approved: boolean) {
 }
 
 export async function deleteMessage(id: number) {
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from('messages')
     .delete()
     .eq('id', id)
@@ -83,7 +83,7 @@ export async function deleteMessage(id: number) {
 }
 
 export async function getApprovedMessages(): Promise<Message[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('messages')
     .select('*')
     .eq('approved', true)
@@ -94,7 +94,7 @@ export async function getApprovedMessages(): Promise<Message[]> {
 
 // ── Drawings ──
 export async function getDrawings(): Promise<Drawing[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('drawings')
     .select('*')
     .order('created_at', { ascending: false })
@@ -103,7 +103,7 @@ export async function getDrawings(): Promise<Drawing[]> {
 }
 
 export async function addDrawing(name: string, image_data: string): Promise<Drawing> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('drawings')
     .insert({ name, image_data, votes: 0, approved: false, rank: null })
     .select()
@@ -113,7 +113,7 @@ export async function addDrawing(name: string, image_data: string): Promise<Draw
 }
 
 export async function approveDrawing(id: number, approved: boolean, rank: number | null = null) {
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from('drawings')
     .update({ approved, rank })
     .eq('id', id)
@@ -121,7 +121,7 @@ export async function approveDrawing(id: number, approved: boolean, rank: number
 }
 
 export async function deleteDrawing(id: number) {
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from('drawings')
     .delete()
     .eq('id', id)
@@ -129,15 +129,15 @@ export async function deleteDrawing(id: number) {
 }
 
 export async function voteDrawing(id: number) {
-  const { data: current, error: fetchErr } = await supabase
+  const { data: current, error: fetchErr } = await getSupabase()
     .from('drawings')
     .select('votes')
     .eq('id', id)
     .single()
-  
+
   if (fetchErr) throw fetchErr
 
-  const { error: updateErr } = await supabase
+  const { error: updateErr } = await getSupabase()
     .from('drawings')
     .update({ votes: (current?.votes ?? 0) + 1 })
     .eq('id', id)
@@ -146,7 +146,7 @@ export async function voteDrawing(id: number) {
 }
 
 export async function getApprovedDrawings(): Promise<Drawing[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('drawings')
     .select('*')
     .eq('approved', true)
