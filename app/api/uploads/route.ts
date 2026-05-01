@@ -2,13 +2,20 @@ import { NextResponse } from 'next/server'
 import { addUploads, getApprovedUploads } from '@/lib/db'
 
 const MAX_UPLOADS_PER_REQUEST = 10
+const MAX_VIDEO_BYTES = 50 * 1024 * 1024
 
-function isDataImage(value: unknown): value is string {
+function isDataMedia(value: unknown): value is string {
   return (
     typeof value === 'string' &&
-    value.startsWith('data:image/') &&
+    (value.startsWith('data:image/') || value.startsWith('data:video/')) &&
     value.includes(';base64,')
   )
+}
+
+function getDataUriBytes(dataUri: string) {
+  const base64Part = dataUri.split(';base64,')[1] || ''
+  const padding = base64Part.endsWith('==') ? 2 : base64Part.endsWith('=') ? 1 : 0
+  return Math.max(0, (base64Part.length * 3) / 4 - padding)
 }
 
 export async function GET() {
@@ -27,24 +34,40 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json()
-    const images = Array.isArray(body?.images) ? body.images : []
+    const media = Array.isArray(body?.media)
+      ? body.media
+      : Array.isArray(body?.images)
+        ? body.images
+        : []
 
-    if (!images.length) {
-      return NextResponse.json({ error: 'No images provided' }, { status: 400 })
+    if (!media.length) {
+      return NextResponse.json({ error: 'No media provided' }, { status: 400 })
     }
 
-    if (images.length > MAX_UPLOADS_PER_REQUEST) {
+    if (media.length > MAX_UPLOADS_PER_REQUEST) {
       return NextResponse.json(
-        { error: `You can upload up to ${MAX_UPLOADS_PER_REQUEST} photos at a time` },
+        { error: `You can upload up to ${MAX_UPLOADS_PER_REQUEST} files at a time` },
         { status: 400 }
       )
     }
 
-    if (!images.every(isDataImage)) {
-      return NextResponse.json({ error: 'Invalid image format' }, { status: 400 })
+    if (!media.every(isDataMedia)) {
+      return NextResponse.json(
+        { error: 'Only images and videos are allowed' },
+        { status: 400 }
+      )
     }
 
-    const saved = await addUploads(images)
+    for (const item of media) {
+      if (item.startsWith('data:video/') && getDataUriBytes(item) > MAX_VIDEO_BYTES) {
+        return NextResponse.json(
+          { error: 'Max file size reached. Video limit is 50 MB.' },
+          { status: 400 }
+        )
+      }
+    }
+
+    const saved = await addUploads(media)
     return NextResponse.json(saved, { status: 201 })
   } catch (err) {
     console.error('POST /api/uploads failed:', err)

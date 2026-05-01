@@ -1255,7 +1255,7 @@ export default function Home() {
               Guest Photo Wall
             </h2>
             <p style={{ color: 'var(--text-mid)', marginBottom: '1.2rem' }}>
-              Scan the QR code or tap the button below to upload up to 10 photos.
+              Scan the QR code or tap the button below to upload up to 10 photos/videos.
             </p>
             <Link
               href="/upload"
@@ -1280,12 +1280,22 @@ export default function Home() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
               {approvedUploads.map((photo) => (
                 <div key={photo.id} style={{ borderRadius: '10px', overflow: 'hidden', border: '1px solid rgba(198, 167, 105, 0.2)', background: '#fff' }}>
-                  <img
-                    src={photo.image_data}
-                    alt={`Guest upload ${photo.id}`}
-                    onClick={() => setSelectedUpload(photo.image_data)}
-                    style={{ width: '100%', height: 190, objectFit: 'cover', display: 'block', cursor: 'pointer' }}
-                  />
+                  {photo.image_data.startsWith('data:video/') ? (
+                    <video
+                      src={photo.image_data}
+                      onClick={() => setSelectedUpload(photo.image_data)}
+                      style={{ width: '100%', height: 190, objectFit: 'cover', display: 'block', cursor: 'pointer' }}
+                      muted
+                      playsInline
+                    />
+                  ) : (
+                    <img
+                      src={photo.image_data}
+                      alt={`Guest upload ${photo.id}`}
+                      onClick={() => setSelectedUpload(photo.image_data)}
+                      style={{ width: '100%', height: 190, objectFit: 'cover', display: 'block', cursor: 'pointer' }}
+                    />
+                  )}
                   <div style={{ padding: '.6rem .75rem', display: 'flex', justifyContent: 'flex-end' }}>
                     <button
                       onClick={(e) => {
@@ -1360,11 +1370,20 @@ export default function Home() {
             >
               ✕
             </button>
-            <img
-              src={selectedUpload}
-              alt="Guest photo full view"
-              style={{ maxWidth: '95vw', maxHeight: '90vh', width: 'auto', height: 'auto', display: 'block' }}
-            />
+            {selectedUpload.startsWith('data:video/') ? (
+              <video
+                src={selectedUpload}
+                controls
+                autoPlay
+                style={{ maxWidth: '95vw', maxHeight: '90vh', width: 'auto', height: 'auto', display: 'block' }}
+              />
+            ) : (
+              <img
+                src={selectedUpload}
+                alt="Guest photo full view"
+                style={{ maxWidth: '95vw', maxHeight: '90vh', width: 'auto', height: 'auto', display: 'block' }}
+              />
+            )}
           </div>
         </div>
       )}
