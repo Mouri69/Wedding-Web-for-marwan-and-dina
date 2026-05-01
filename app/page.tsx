@@ -71,31 +71,168 @@ function Section({ id, children }: { id?: string; children: React.ReactNode }) {
   )
 }
 
+interface Message {
+  id: number
+  name: string
+  message: string
+  approved: boolean
+  created_at: string
+}
+
+interface Drawing {
+  id: number
+  name: string
+  image_data: string
+  votes: number
+  approved: boolean
+  rank: number | null
+  created_at: string
+}
+
 export default function Home() {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    attendance: '',
-    message: ''
-  })
-  const [submitted, setSubmitted] = useState(false)
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log('RSVP Submitted:', formData)
-    setSubmitted(true)
-    setFormData({ name: '', email: '', attendance: '', message: '' })
-    setTimeout(() => setSubmitted(false), 3000)
-  }
-
   const WEDDING_DATE = new Date('2026-05-26T18:00:00')
   const countdown = useCountdown(WEDDING_DATE)
 
+  const [messages, setMessages] = useState<Message[]>([])
+  const [drawings, setDrawings] = useState<Drawing[]>([])
+  const [loading, setLoading] = useState(true)
 
+  const [messageForm, setMessageForm] = useState({ name: '', message: '' })
+  const [messageSubmitted, setMessageSubmitted] = useState(false)
+
+  const [drawingForm, setDrawingForm] = useState({ name: '' })
+  const [drawingSubmitted, setDrawingSubmitted] = useState(false)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [isDrawing, setIsDrawing] = useState(false)
+  const [currentColor, setCurrentColor] = useState('#000000')
+
+  const loadData = async () => {
+    try {
+      const [mRes, dRes] = await Promise.all([
+        fetch('/api/messages'),
+        fetch('/api/drawings')
+      ])
+      setMessages(await mRes.json())
+      setDrawings(await dRes.json())
+    } catch (e) {
+      console.error('Failed to load data:', e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const handleMessageSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    await fetch('/api/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(messageForm)
+    })
+    setMessageSubmitted(true)
+    setMessageForm({ name: '', message: '' })
+    setTimeout(() => setMessageSubmitted(false), 5000)
+    loadData()
+  }
+
+  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    
+    setIsDrawing(true)
+    const rect = canvas.getBoundingClientRect()
+    const x = 'touches' in e 
+      ? e.touches[0].clientX - rect.left
+      : e.clientX - rect.left
+    const y = 'touches' in e
+      ? e.touches[0].clientY - rect.top
+      : e.clientY - rect.top
+    ctx.beginPath()
+    ctx.moveTo(x, y)
+  }
+
+  const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isDrawing) return
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    
+    const rect = canvas.getBoundingClientRect()
+    const x = 'touches' in e
+      ? e.touches[0].clientX - rect.left
+      : e.clientX - rect.left
+    const y = 'touches' in e
+      ? e.touches[0].clientY - rect.top
+      : e.clientY - rect.top
+    
+    ctx.lineWidth = 3
+    ctx.lineCap = 'round'
+    ctx.strokeStyle = currentColor
+    ctx.lineTo(x, y)
+    ctx.stroke()
+  }
+
+  const stopDrawing = () => {
+    setIsDrawing(false)
+  }
+
+  const clearCanvas = () => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+  }
+
+  const handleDrawingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const canvas = canvasRef.current
+    if (!canvas || !drawingForm.name) return
+    
+    const imageData = canvas.toDataURL('image/png')
+    await fetch('/api/drawings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: drawingForm.name, image_data: imageData })
+    })
+    
+    setDrawingSubmitted(true)
+    setDrawingForm({ name: '' })
+    clearCanvas()
+    setTimeout(() => setDrawingSubmitted(false), 5000)
+    loadData()
+  }
+
+  const [votedDrawings, setVotedDrawings] = useState<Set<number>>(new Set())
+
+  useEffect(() => {
+    const saved = localStorage.getItem('votedDrawings')
+    if (saved) {
+      setVotedDrawings(new Set(JSON.parse(saved)))
+    }
+  }, [])
+
+  const handleVote = async (id: number) => {
+    if (votedDrawings.has(id)) return
+    await fetch(`/api/drawings/${id}/vote`, { method: 'POST' })
+    const newVoted = new Set(votedDrawings)
+    newVoted.add(id)
+    setVotedDrawings(newVoted)
+    localStorage.setItem('votedDrawings', JSON.stringify([...newVoted]))
+    loadData()
+  }
+
+  const approvedMessages = messages.filter(m => m.approved)
+  const approvedDrawings = drawings
+    .filter(d => d.approved)
+    .sort((a, b) => (a.rank ?? 999) - (b.rank ?? 999))
+    .slice(0, 5)
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--ivory)', overflowX: 'hidden' }}>
@@ -117,6 +254,7 @@ export default function Home() {
           }
         }
       `}</style>
+      
       {/* Hero Section */}
       <section id="hero" style={{ 
         minHeight: '80vh', 
@@ -129,7 +267,6 @@ export default function Home() {
         position: 'relative',
         padding: '2rem 1rem'
       }}>
-        {/* Overlay to darken background if needed */}
         <div style={{ 
           position: 'absolute', 
           inset: 0, 
@@ -364,29 +501,35 @@ export default function Home() {
         </RevealSection>
       </section>
 
-      {/* RSVP */}
-      <Section id="rsvp">
+      {/* Messages Section */}
+      <Section id="messages">
         <RevealSection>
-          <div style={{ textAlign: 'center', maxWidth: '600px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
             <h2 style={{ fontSize: '2.5rem', fontWeight: 500, color: 'var(--black)', marginBottom: '1rem' }}>
-              RSVP
+              Leave a Message
             </h2>
             <Divider />
-            
-            {submitted ? (
+          </div>
+
+          {/* Message Form */}
+          <div style={{ maxWidth: '600px', margin: '0 auto 4rem auto' }}>
+            {messageSubmitted ? (
               <div style={{ 
-                padding: '3rem', 
+                padding: '2rem', 
                 background: 'white', 
                 border: '1px solid rgba(198, 167, 105, 0.3)',
-                textAlign: 'center'
+                textAlign: 'center',
+                borderRadius: '8px'
               }}>
-                <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.8rem', color: 'var(--light-gold)', marginBottom: '1rem' }}>
+                <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.5rem', color: 'var(--light-gold)', marginBottom: '0.5rem' }}>
                   Thank You!
                 </h3>
-                <p style={{ color: 'var(--text-mid)' }}>Your RSVP has been submitted successfully.</p>
+                <p style={{ color: 'var(--text-mid)' }}>
+                  Your message has been sent! It will appear on the website after admin approval.
+                </p>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} style={{ textAlign: 'left' }}>
+              <form onSubmit={handleMessageSubmit} style={{ background: 'white', padding: '2rem', borderRadius: '8px', border: '1px solid rgba(198, 167, 105, 0.2)' }}>
                 <div style={{ marginBottom: '1.5rem' }}>
                   <label style={{ 
                     display: 'block', 
@@ -396,13 +539,12 @@ export default function Home() {
                     color: 'var(--text-mid)',
                     marginBottom: '0.5rem'
                   }}>
-                    Name
+                    Your Name
                   </label>
                   <input 
                     type="text" 
-                    name="name" 
-                    value={formData.name}
-                    onChange={handleInputChange}
+                    value={messageForm.name}
+                    onChange={(e) => setMessageForm({ ...messageForm, name: e.target.value })}
                     required
                     style={{ 
                       width: '100%', 
@@ -415,7 +557,6 @@ export default function Home() {
                     }}
                   />
                 </div>
-                
                 <div style={{ marginBottom: '1.5rem' }}>
                   <label style={{ 
                     display: 'block', 
@@ -425,73 +566,12 @@ export default function Home() {
                     color: 'var(--text-mid)',
                     marginBottom: '0.5rem'
                   }}>
-                    Email
-                  </label>
-                  <input 
-                    type="email" 
-                    name="email" 
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    required
-                    style={{ 
-                      width: '100%', 
-                      padding: '1rem', 
-                      border: '1px solid rgba(198, 167, 105, 0.4)',
-                      background: 'white',
-                      fontSize: '1rem',
-                      fontFamily: 'Inter, sans-serif',
-                      color: 'var(--text-dark)'
-                    }}
-                  />
-                </div>
-                
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <label style={{ 
-                    display: 'block', 
-                    fontSize: '0.85rem', 
-                    letterSpacing: '0.1em', 
-                    textTransform: 'uppercase',
-                    color: 'var(--text-mid)',
-                    marginBottom: '0.5rem'
-                  }}>
-                    Will you attend?
-                  </label>
-                  <select 
-                    name="attendance" 
-                    value={formData.attendance}
-                    onChange={handleInputChange}
-                    required
-                    style={{ 
-                      width: '100%', 
-                      padding: '1rem', 
-                      border: '1px solid rgba(198, 167, 105, 0.4)',
-                      background: 'white',
-                      fontSize: '1rem',
-                      fontFamily: 'Inter, sans-serif',
-                      color: 'var(--text-dark)'
-                    }}
-                  >
-                    <option value="">Select an option</option>
-                    <option value="yes">Yes, I'll be there!</option>
-                    <option value="no">Unfortunately, I can't make it</option>
-                  </select>
-                </div>
-                
-                <div style={{ marginBottom: '2rem' }}>
-                  <label style={{ 
-                    display: 'block', 
-                    fontSize: '0.85rem', 
-                    letterSpacing: '0.1em', 
-                    textTransform: 'uppercase',
-                    color: 'var(--text-mid)',
-                    marginBottom: '0.5rem'
-                  }}>
-                    Message (Optional)
+                    Your Message
                   </label>
                   <textarea 
-                    name="message" 
-                    value={formData.message}
-                    onChange={handleInputChange}
+                    value={messageForm.message}
+                    onChange={(e) => setMessageForm({ ...messageForm, message: e.target.value })}
+                    required
                     rows={4}
                     style={{ 
                       width: '100%', 
@@ -505,7 +585,6 @@ export default function Home() {
                     }}
                   />
                 </div>
-                
                 <button 
                   type="submit"
                   style={{ 
@@ -524,11 +603,256 @@ export default function Home() {
                   onMouseOver={(e) => e.currentTarget.style.opacity = '0.9'}
                   onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
                 >
-                  Send RSVP
+                  Send Message
                 </button>
               </form>
             )}
           </div>
+
+          {/* Approved Messages */}
+          {approvedMessages.length > 0 && (
+            <div>
+              <h3 style={{ textAlign: 'center', fontSize: '1.8rem', marginBottom: '2rem', fontFamily: 'Playfair Display, serif' }}>
+                Guest Messages
+              </h3>
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
+                gap: '1.5rem'
+              }}>
+                {approvedMessages.map((msg) => (
+                  <div key={msg.id} style={{ 
+                    background: 'white', 
+                    padding: '1.5rem', 
+                    borderRadius: '8px',
+                    border: '1px solid rgba(198, 167, 105, 0.2)'
+                  }}>
+                    <p style={{ 
+                      fontFamily: 'Playfair Display, serif',
+                      fontStyle: 'italic',
+                      color: 'var(--text-dark)',
+                      marginBottom: '1rem',
+                      lineHeight: 1.6
+                    }}>
+                      "{msg.message}"
+                    </p>
+                    <p style={{ 
+                      fontFamily: '"Great Vibes", cursive',
+                      fontSize: '1.3rem',
+                      color: 'var(--light-gold)',
+                      textAlign: 'right'
+                    }}>
+                      — {msg.name}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </RevealSection>
+      </Section>
+
+      {/* Drawings Section */}
+      <Section id="drawings">
+        <RevealSection>
+          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <h2 style={{ fontSize: '2.5rem', fontWeight: 500, color: 'var(--black)', marginBottom: '1rem' }}>
+              Draw Something
+            </h2>
+            <Divider />
+          </div>
+
+          {/* Drawing Form */}
+          <div style={{ maxWidth: '600px', margin: '0 auto 4rem auto' }}>
+            {drawingSubmitted ? (
+              <div style={{ 
+                padding: '2rem', 
+                background: 'white', 
+                border: '1px solid rgba(198, 167, 105, 0.3)',
+                textAlign: 'center',
+                borderRadius: '8px'
+              }}>
+                <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.5rem', color: 'var(--light-gold)', marginBottom: '0.5rem' }}>
+                  Thank You!
+                </h3>
+                <p style={{ color: 'var(--text-mid)' }}>
+                  Your drawing has been sent! It will appear on the website after admin approval.
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={handleDrawingSubmit} style={{ background: 'white', padding: '2rem', borderRadius: '8px', border: '1px solid rgba(198, 167, 105, 0.2)' }}>
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <label style={{ 
+                    display: 'block', 
+                    fontSize: '0.85rem', 
+                    letterSpacing: '0.1em', 
+                    textTransform: 'uppercase',
+                    color: 'var(--text-mid)',
+                    marginBottom: '0.5rem'
+                  }}>
+                    Your Name
+                  </label>
+                  <input 
+                    type="text" 
+                    value={drawingForm.name}
+                    onChange={(e) => setDrawingForm({ ...drawingForm, name: e.target.value })}
+                    required
+                    style={{ 
+                      width: '100%', 
+                      padding: '1rem', 
+                      border: '1px solid rgba(198, 167, 105, 0.4)',
+                      background: 'white',
+                      fontSize: '1rem',
+                      fontFamily: 'Inter, sans-serif',
+                      color: 'var(--text-dark)'
+                    }}
+                  />
+                </div>
+
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <label style={{ 
+                    display: 'block', 
+                    fontSize: '0.85rem', 
+                    letterSpacing: '0.1em', 
+                    textTransform: 'uppercase',
+                    color: 'var(--text-mid)',
+                    marginBottom: '0.5rem'
+                  }}>
+                    Draw below!
+                  </label>
+                  <div style={{ 
+                    border: '2px solid rgba(198, 167, 105, 0.3)', 
+                    borderRadius: '8px',
+                    overflow: 'hidden',
+                    background: 'white'
+                  }}>
+                    <canvas
+                      ref={canvasRef}
+                      width={560}
+                      height={300}
+                      style={{ 
+                        display: 'block', 
+                        width: '100%',
+                        cursor: 'crosshair',
+                        touchAction: 'none'
+                      }}
+                      onMouseDown={startDrawing}
+                      onMouseMove={draw}
+                      onMouseUp={stopDrawing}
+                      onMouseLeave={stopDrawing}
+                      onTouchStart={startDrawing}
+                      onTouchMove={draw}
+                      onTouchEnd={stopDrawing}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      {['#000000', '#C6A769', '#8a3f52', '#6e9e82', '#e07070'].map((color) => (
+                        <button
+                          key={color}
+                          type="button"
+                          onClick={() => setCurrentColor(color)}
+                          style={{
+                            width: '30px',
+                            height: '30px',
+                            borderRadius: '50%',
+                            background: color,
+                            border: currentColor === color ? '3px solid #333' : '2px solid #ddd',
+                            cursor: 'pointer'
+                          }}
+                        />
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={clearCanvas}
+                      style={{
+                        padding: '0.5rem 1rem',
+                        border: '1px solid rgba(198, 167, 105, 0.4)',
+                        background: 'white',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '0.85rem'
+                      }}
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </div>
+
+                <button 
+                  type="submit"
+                  style={{ 
+                    width: '100%', 
+                    padding: '1.25rem', 
+                    background: 'var(--light-gold)',
+                    color: 'white',
+                    border: 'none',
+                    fontSize: '0.95rem',
+                    letterSpacing: '0.15em',
+                    textTransform: 'uppercase',
+                    cursor: 'pointer',
+                    fontFamily: 'Inter, sans-serif',
+                    transition: 'opacity 0.3s ease'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.opacity = '0.9'}
+                  onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
+                >
+                  Submit Drawing
+                </button>
+              </form>
+            )}
+          </div>
+
+          {/* Approved Drawings */}
+          {approvedDrawings.length > 0 && (
+            <div>
+              <h3 style={{ textAlign: 'center', fontSize: '1.8rem', marginBottom: '2rem', fontFamily: 'Playfair Display, serif' }}>
+                Top Drawings
+              </h3>
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
+                gap: '1.5rem'
+              }}>
+                {approvedDrawings.map((drawing) => (
+                  <div key={drawing.id} style={{ 
+                    background: 'white', 
+                    borderRadius: '8px',
+                    overflow: 'hidden',
+                    border: '1px solid rgba(198, 167, 105, 0.2)'
+                  }}>
+                    <img 
+                      src={drawing.image_data} 
+                      alt={`Drawing by ${drawing.name}`}
+                      style={{ width: '100%', display: 'block' }}
+                    />
+                    <div style={{ padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontFamily: '"Great Vibes", cursive', fontSize: '1.2rem' }}>
+                        {drawing.name}
+                      </span>
+                      <button
+                        onClick={() => handleVote(drawing.id)}
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          fontSize: '1.2rem',
+                          cursor: votedDrawings.has(drawing.id) ? 'default' : 'pointer',
+                          padding: '0.5rem',
+                          borderRadius: '50%',
+                          transition: 'all 0.2s ease',
+                          color: votedDrawings.has(drawing.id) ? '#C6A769' : 'inherit',
+                          WebkitTapHighlightColor: 'transparent'
+                        }}
+                      >
+                        {votedDrawings.has(drawing.id) ? '♥' : '♡'} {drawing.votes}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </RevealSection>
       </Section>
 
