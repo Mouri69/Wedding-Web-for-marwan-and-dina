@@ -470,8 +470,10 @@ export default function Home() {
               26.05.2026
             </p>
             <p style={{ 
-              fontFamily: 'Cormorant Garamond, serif', 
+              fontFamily: 'Lora, serif', 
               fontSize: 'clamp(1rem, 2.2vw, 1rem)', 
+              fontStyle: 'italic',
+              fontWeight: 500,
               color: 'white',
               textShadow: '0 2px 8px rgba(0,0,0,0.5)',
               letterSpacing: '0.15em'
