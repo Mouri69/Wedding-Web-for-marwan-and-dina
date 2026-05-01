@@ -211,7 +211,7 @@ export default function Home() {
             </div>
             <div style={{ 
               fontFamily: '"Great Vibes", cursive',
-              fontSize: 'clamp(1rem, 4.5vw, 2rem)',
+              fontSize: 'clamp(4rem, 4.5vw, 4rem)',
               marginBottom: '1rem'
             }}>
               Marwan & Dena
