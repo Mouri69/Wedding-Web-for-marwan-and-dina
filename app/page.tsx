@@ -460,17 +460,17 @@ export default function Home() {
               Are getting engaged
             </p>
             <p style={{ 
-              fontFamily: 'fantasy', 
+              fontFamily: '"Great Vibes", cursive', 
               fontSize: 'clamp(1rem, 2.5vw, 1rem)', 
               color: 'white',
               textShadow: '0 2px 8px rgba(0,0,0,0.5)',
               letterSpacing: '0.15em',
               marginBottom: '0.5rem'
             }}>
-              MAY 26 2026
+              26.05.2026
             </p>
             <p style={{ 
-              fontFamily: 'fantasy', 
+              fontFamily: 'Cormorant Garamond, serif', 
               fontSize: 'clamp(1rem, 2.2vw, 1rem)', 
               color: 'white',
               textShadow: '0 2px 8px rgba(0,0,0,0.5)',
