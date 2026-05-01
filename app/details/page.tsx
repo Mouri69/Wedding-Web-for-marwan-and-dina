@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
 const TIMELINE_ITEMS = [
-  { key: 'meet-greet', label: 'Meet & Greet', icon: '🕌' },
+  { key: 'meet-greet', label: 'Meet & Greet', icon: '🤝' },
   { key: 'ceremony', label: 'The Ceremony', icon: '💍' },
   { key: 'cocktails', label: 'Cocktails & Canapes', icon: '🍹' },
   { key: 'photos', label: 'Photos', icon: '📸' },
