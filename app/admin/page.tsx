@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 interface RSVP { id:number; name:string; answer:string; created_at:string }
 interface Message { id:number; name:string; message:string; approved:boolean; created_at:string }
 interface Drawing { id:number; name:string; image_data:string; votes:number; approved:boolean; rank:number|null; created_at:string }
-interface UploadPhoto { id:number; image_data:string; approved:boolean; created_at:string }
+interface UploadPhoto { id:number; image_data:string; votes:number; approved:boolean; created_at:string }
 
 function encPw(password: string) {
   return encodeURIComponent(password.trim())
@@ -336,6 +336,7 @@ export default function AdminPage() {
                   <div key={u.id} style={{ border: `0.5px solid ${u.approved ? 'rgba(110,158,130,.4)' : 'rgba(201,121,140,.2)'}`, borderRadius:14, overflow:'hidden', background:'#fff', position:'relative' }}>
                     {u.approved && <div style={{ position:'absolute', top:8, left:8, background:'rgba(110,158,130,.85)', color:'#fff', fontSize:'.6rem', padding:'.2rem .6rem', borderRadius:10, letterSpacing:'.08em', fontFamily:'Montserrat,sans-serif' }}>LIVE</div>}
                     <img src={u.image_data} alt={`Upload ${u.id}`} style={{ width:'100%', aspectRatio:'4/3', objectFit:'cover', display:'block' }} />
+                    <div style={{ padding:'.6rem .8rem 0', fontSize:'.75rem', color:'#c97b8c', fontWeight:500 }}>♥ {u.votes || 0}</div>
                     <div style={{ padding:'0 .8rem .8rem', display:'flex', flexDirection:'column', gap:6, marginTop:'.7rem' }}>
                       <button
                         onClick={() => toggleUploadApproval(u.id, !u.approved)}

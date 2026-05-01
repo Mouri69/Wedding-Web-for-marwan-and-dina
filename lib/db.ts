@@ -29,6 +29,7 @@ export interface Drawing {
 export interface UploadPhoto {
   id: number
   image_data: string
+  votes: number
   approved: boolean
   created_at: string
 }
@@ -183,13 +184,30 @@ export async function getApprovedUploads(): Promise<UploadPhoto[]> {
 }
 
 export async function addUploads(images: string[]): Promise<UploadPhoto[]> {
-  const rows = images.map((image_data) => ({ image_data, approved: false }))
+  const rows = images.map((image_data) => ({ image_data, votes: 0, approved: false }))
   const { data, error } = await getSupabase()
     .from('uploads')
     .insert(rows)
     .select()
   if (error) throw error
   return data || []
+}
+
+export async function voteUpload(id: number) {
+  const { data: current, error: fetchErr } = await getSupabase()
+    .from('uploads')
+    .select('votes')
+    .eq('id', id)
+    .single()
+
+  if (fetchErr) throw fetchErr
+
+  const { error: updateErr } = await getSupabase()
+    .from('uploads')
+    .update({ votes: (current?.votes ?? 0) + 1 })
+    .eq('id', id)
+
+  if (updateErr) throw updateErr
 }
 
 export async function approveUpload(id: number, approved: boolean) {

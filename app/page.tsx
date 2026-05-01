@@ -99,6 +99,7 @@ interface Drawing {
 interface UploadPhoto {
   id: number
   image_data: string
+  votes: number
   approved: boolean
   created_at: string
 }
@@ -110,6 +111,7 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([])
   const [drawings, setDrawings] = useState<Drawing[]>([])
   const [uploads, setUploads] = useState<UploadPhoto[]>([])
+  const [selectedUpload, setSelectedUpload] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   const [messageForm, setMessageForm] = useState({ name: '', message: '' })
@@ -352,11 +354,19 @@ export default function Home() {
   }
 
   const [votedDrawings, setVotedDrawings] = useState<Set<number>>(new Set())
+  const [votedUploads, setVotedUploads] = useState<Set<number>>(new Set())
 
   useEffect(() => {
     const saved = localStorage.getItem('votedDrawings')
     if (saved) {
       setVotedDrawings(new Set(JSON.parse(saved)))
+    }
+  }, [])
+
+  useEffect(() => {
+    const saved = localStorage.getItem('votedUploads')
+    if (saved) {
+      setVotedUploads(new Set(JSON.parse(saved)))
     }
   }, [])
 
@@ -367,6 +377,16 @@ export default function Home() {
     newVoted.add(id)
     setVotedDrawings(newVoted)
     localStorage.setItem('votedDrawings', JSON.stringify([...newVoted]))
+    loadData()
+  }
+
+  const handleUploadVote = async (id: number) => {
+    if (votedUploads.has(id)) return
+    await fetch(`/api/uploads/${id}/vote`, { method: 'POST' })
+    const newVoted = new Set(votedUploads)
+    newVoted.add(id)
+    setVotedUploads(newVoted)
+    localStorage.setItem('votedUploads', JSON.stringify([...newVoted]))
     loadData()
   }
 
@@ -1260,7 +1280,31 @@ export default function Home() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
               {approvedUploads.map((photo) => (
                 <div key={photo.id} style={{ borderRadius: '10px', overflow: 'hidden', border: '1px solid rgba(198, 167, 105, 0.2)', background: '#fff' }}>
-                  <img src={photo.image_data} alt={`Guest upload ${photo.id}`} style={{ width: '100%', height: 190, objectFit: 'cover', display: 'block' }} />
+                  <img
+                    src={photo.image_data}
+                    alt={`Guest upload ${photo.id}`}
+                    onClick={() => setSelectedUpload(photo.image_data)}
+                    style={{ width: '100%', height: 190, objectFit: 'cover', display: 'block', cursor: 'pointer' }}
+                  />
+                  <div style={{ padding: '.6rem .75rem', display: 'flex', justifyContent: 'flex-end' }}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleUploadVote(photo.id)
+                      }}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        fontSize: '1.05rem',
+                        cursor: votedUploads.has(photo.id) ? 'default' : 'pointer',
+                        color: votedUploads.has(photo.id) ? '#C6A769' : '#6f5a34',
+                        padding: '0.2rem 0.35rem',
+                        borderRadius: '999px',
+                      }}
+                    >
+                      {votedUploads.has(photo.id) ? '♥' : '♡'} {photo.votes || 0}
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -1271,6 +1315,59 @@ export default function Home() {
           )}
         </RevealSection>
       </Section>
+
+      {selectedUpload && (
+        <div
+          onClick={() => setSelectedUpload(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.7)',
+            zIndex: 2147483647,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1rem',
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: 'relative',
+              maxWidth: 'min(1000px, 95vw)',
+              maxHeight: '90vh',
+              borderRadius: '12px',
+              overflow: 'hidden',
+              background: '#fff',
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setSelectedUpload(null)}
+              style={{
+                position: 'absolute',
+                top: 10,
+                right: 10,
+                width: 34,
+                height: 34,
+                borderRadius: 999,
+                border: 'none',
+                background: 'rgba(0,0,0,0.65)',
+                color: '#fff',
+                cursor: 'pointer',
+                fontSize: '1rem',
+              }}
+            >
+              ✕
+            </button>
+            <img
+              src={selectedUpload}
+              alt="Guest photo full view"
+              style={{ maxWidth: '95vw', maxHeight: '90vh', width: 'auto', height: 'auto', display: 'block' }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <footer style={{ 
