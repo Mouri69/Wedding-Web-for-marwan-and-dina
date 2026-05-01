@@ -99,6 +99,18 @@ export default function Home() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--ivory)', overflowX: 'hidden' }}>
+      <style>{`
+        @media (max-width: 768px) {
+          #details-section,
+          #our-story {
+            min-height: 70vh !important;
+          }
+          #details-section img,
+          #our-story img {
+            max-width: 100vw !important;
+          }
+        }
+      `}</style>
       {/* Hero Section */}
       <section id="hero" style={{ 
         minHeight: '100vh', 
