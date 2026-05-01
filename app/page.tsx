@@ -119,7 +119,7 @@ export default function Home() {
       `}</style>
       {/* Hero Section */}
       <section id="hero" style={{ 
-        minHeight: '100vh', 
+        minHeight: '80vh', 
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'center',
