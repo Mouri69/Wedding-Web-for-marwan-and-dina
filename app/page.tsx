@@ -107,7 +107,13 @@ export default function Home() {
           }
           #details-section img,
           #our-story img {
-            max-width: 100vw !important;
+            max-width: 90vw !important;
+          }
+          #plate {
+            padding: 1rem 0 !important;
+          }
+          #plate > div {
+            margin-bottom: 1rem !important;
           }
         }
       `}</style>
