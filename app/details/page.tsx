@@ -1,6 +1,17 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
+
+const TIMELINE_ITEMS = [
+  { key: 'meet-greet', label: 'Meet & Greet', icon: '⛪' },
+  { key: 'ceremony', label: 'The Ceremony', icon: '💍' },
+  { key: 'cocktails', label: 'Cocktails & Canapes', icon: '🥂' },
+  { key: 'photos', label: 'Photos', icon: '📸' },
+  { key: 'cake-cutting', label: 'Cake Cutting', icon: '🎂' },
+  { key: 'dinner', label: 'Dinner', icon: '🍽️' },
+  { key: 'party', label: 'Party', icon: '🪩' },
+  { key: 'farewells', label: 'Farewells', icon: '🚗' },
+]
 
 function useCountdown(target: Date) {
   const [diff, setDiff] = useState(target.getTime() - Date.now())
@@ -44,6 +55,31 @@ function Section({ id, children }: { id?: string; children: React.ReactNode }) {
 export default function DetailsPage() {
   const WEDDING_DATE = new Date('2026-05-26T18:00:00')
   const countdown = useCountdown(WEDDING_DATE)
+  const [currentTimelineEvent, setCurrentTimelineEvent] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadCurrentEvent() {
+      try {
+        const res = await fetch('/api/timeline/current')
+        if (!res.ok) return
+        const data = await res.json()
+        if (!cancelled) {
+          setCurrentTimelineEvent(typeof data.currentEvent === 'string' ? data.currentEvent : null)
+        }
+      } catch (err) {
+        console.error('Failed to load timeline current event:', err)
+      }
+    }
+
+    loadCurrentEvent()
+    const timer = setInterval(loadCurrentEvent, 20000)
+    return () => {
+      cancelled = true
+      clearInterval(timer)
+    }
+  }, [])
 
   return (
     <div style={{ minHeight: '100vh', background: '#F8F5F0', overflowX: 'hidden' }}>
@@ -133,6 +169,75 @@ export default function DetailsPage() {
             allowFullScreen={true}
             loading="lazy"
           />
+        </div>
+      </Section>
+
+      <Section id="timeline">
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <h2
+            style={{
+              fontSize: '2.5rem',
+              fontWeight: 500,
+              color: '#1A1A1A',
+              marginBottom: '1rem',
+              fontFamily: '"Great Vibes", cursive',
+            }}
+          >
+            Our Timeline
+          </h2>
+          <Divider />
+        </div>
+
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
+            gap: '1rem',
+          }}
+        >
+          {TIMELINE_ITEMS.map((item) => {
+            const isActive = currentTimelineEvent === item.key
+            return (
+              <div
+                key={item.key}
+                style={{
+                  borderRadius: '16px',
+                  padding: '1.25rem 1rem',
+                  textAlign: 'center',
+                  border: isActive ? '2px solid #C6A769' : '1px solid rgba(198, 167, 105, 0.25)',
+                  background: isActive ? 'rgba(198, 167, 105, 0.18)' : 'rgba(255, 255, 255, 0.65)',
+                  boxShadow: isActive ? '0 10px 22px rgba(198, 167, 105, 0.25)' : 'none',
+                  transition: 'all 0.25s ease',
+                }}
+              >
+                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>{item.icon}</div>
+                <div
+                  style={{
+                    fontFamily: 'Playfair Display, serif',
+                    fontSize: '1.2rem',
+                    color: '#1A1A1A',
+                    fontWeight: isActive ? 700 : 500,
+                  }}
+                >
+                  {item.label}
+                </div>
+                {isActive && (
+                  <div
+                    style={{
+                      marginTop: '0.45rem',
+                      fontFamily: 'Inter, sans-serif',
+                      fontSize: '0.72rem',
+                      letterSpacing: '0.12em',
+                      textTransform: 'uppercase',
+                      color: '#7B5A1E',
+                    }}
+                  >
+                    Happening now
+                  </div>
+                )}
+              </div>
+            )
+          })}
         </div>
       </Section>
     </div>

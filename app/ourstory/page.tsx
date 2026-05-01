@@ -47,11 +47,44 @@ export default function OurStoryPage() {
             marginBottom: '1rem',
             fontFamily: 'Playfair Display, serif'
           }}>
-            Our Story
           </h1>
-          <p style={{ color: '#4A4A4A', fontSize: '1.1rem' }}>
-            Coming soon...
-          </p>
+          <div
+            style={{
+              maxWidth: '820px',
+              margin: '2.5rem auto 0 auto',
+              background: 'rgba(255,255,255,0.72)',
+              border: '1px solid rgba(198, 167, 105, 0.28)',
+              borderRadius: '16px',
+              padding: '1.25rem',
+              boxShadow: '0 14px 40px rgba(0, 0, 0, 0.08)',
+            }}
+          >
+            <img
+              src="/ourstory-image.jpeg"
+              alt="Our story memory"
+              style={{
+                width: '100%',
+                maxHeight: '520px',
+                objectFit: 'cover',
+                borderRadius: '12px',
+                display: 'block',
+              }}
+            />
+            <p
+              style={{
+                marginTop: '1.25rem',
+                color: '#3B3131',
+                fontSize: '1.1rem',
+                lineHeight: 1.85,
+                fontFamily: 'Lora, serif',
+                textAlign: 'center',
+              }}
+            >
+              "Same roots, shared childhood, and a lifetime of memories - that&apos;s where our story begins.
+              We&apos;ve been part of each other&apos;s journey every step of the way. What started as a familiar
+              connection slowly blossomed into a love story we never saw coming, but always felt."
+            </p>
+          </div>
         </Container>
       </div>
     </div>

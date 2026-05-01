@@ -6,6 +6,17 @@ interface Message { id:number; name:string; message:string; approved:boolean; cr
 interface Drawing { id:number; name:string; image_data:string; votes:number; approved:boolean; rank:number|null; created_at:string }
 interface UploadPhoto { id:number; image_data:string; votes:number; approved:boolean; created_at:string }
 
+const TIMELINE_OPTIONS = [
+  { key: 'meet-greet', label: 'Meet & Greet' },
+  { key: 'ceremony', label: 'The Ceremony' },
+  { key: 'cocktails', label: 'Cocktails & Canapes' },
+  { key: 'photos', label: 'Photos' },
+  { key: 'cake-cutting', label: 'Cake Cutting' },
+  { key: 'dinner', label: 'Dinner' },
+  { key: 'party', label: 'Party' },
+  { key: 'farewells', label: 'Farewells' },
+]
+
 function encPw(password: string) {
   return encodeURIComponent(password.trim())
 }
@@ -21,9 +32,10 @@ export default function AdminPage() {
   const [drawings, setDrawings] = useState<Drawing[]>([])
   const [uploads, setUploads] = useState<UploadPhoto[]>([])
   const [rsvpFilter, setRsvpFilter] = useState('all')
-  const [activeTab, setActiveTab] = useState<'rsvps'|'messages'|'drawings'|'uploads'>('rsvps')
+  const [activeTab, setActiveTab] = useState<'rsvps'|'messages'|'drawings'|'uploads'|'timeline'>('rsvps')
   const [loading, setLoading] = useState(false)
   const [rankInput, setRankInput] = useState<Record<number, string>>({})
+  const [currentTimelineEvent, setCurrentTimelineEvent] = useState<string | null>(null)
 
   const api = useCallback(async (path: string, opts?: RequestInit) => {
     const res = await fetch(path, opts)
@@ -34,28 +46,32 @@ export default function AdminPage() {
     setLoading(true)
     try {
       const q = encPw(password)
-      const [rRes, mRes, dRes, uRes] = await Promise.all([
+      const [rRes, mRes, dRes, uRes, tRes] = await Promise.all([
         api(`/api/admin/rsvps?password=${q}`),
         api(`/api/admin/messages?password=${q}`),
         api(`/api/admin/drawings?password=${q}`),
         api(`/api/admin/uploads?password=${q}`),
+        api(`/api/admin/timeline/current?password=${q}`),
       ])
       
       const r = await rRes.json()
       const m = await mRes.json()
       const d = await dRes.json()
       const u = await uRes.json()
+      const t = await tRes.json()
       
       setRsvps(Array.isArray(r) ? r : [])
       setMessages(Array.isArray(m) ? m : [])
       setDrawings(Array.isArray(d) ? d : [])
       setUploads(Array.isArray(u) ? u : [])
+      setCurrentTimelineEvent(typeof t?.currentEvent === 'string' ? t.currentEvent : null)
     } catch (e) {
       console.error('Failed to load data:', e)
       setRsvps([])
       setMessages([])
       setDrawings([])
       setUploads([])
+      setCurrentTimelineEvent(null)
     } finally {
       setLoading(false)
     }
@@ -130,6 +146,17 @@ export default function AdminPage() {
     setUploads(prev => prev.filter(u => u.id!==id))
   }
 
+  async function updateCurrentTimelineEvent(nextEvent: string | null) {
+    const res = await api(`/api/admin/timeline/current?password=${encPw(pw)}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({ currentEvent: nextEvent }),
+    })
+    if (!res.ok) return
+    const data = await res.json()
+    setCurrentTimelineEvent(typeof data.currentEvent === 'string' ? data.currentEvent : null)
+  }
+
   function fmtDate(iso: string) {
     if (!iso) return ''
     return new Date(iso).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' })
@@ -197,9 +224,9 @@ export default function AdminPage() {
 
         {/* Tabs */}
         <div style={{ display:'flex', gap:8 }}>
-          {(['rsvps','messages','drawings','uploads'] as const).map(tab => (
+          {(['rsvps','messages','drawings','uploads','timeline'] as const).map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)} style={{ ...adminToolBtn, background: activeTab===tab ? '#c97b8c' : 'transparent', color: activeTab===tab ? '#fff' : '#7a5060', borderColor: activeTab===tab ? '#c97b8c' : 'rgba(201,121,140,.35)', padding:'.5rem 1.4rem' }}>
-              {tab === 'rsvps' ? '👥 Guests' : tab === 'messages' ? '💌 Messages' : tab === 'drawings' ? '🎨 Drawings' : '📸 Uploads'}
+              {tab === 'rsvps' ? '👥 Guests' : tab === 'messages' ? '💌 Messages' : tab === 'drawings' ? '🎨 Drawings' : tab === 'uploads' ? '📸 Uploads' : '🕒 Timeline'}
             </button>
           ))}
         </div>
@@ -356,6 +383,49 @@ export default function AdminPage() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* ── TIMELINE TAB ── */}
+        {!loading && activeTab==='timeline' && (
+          <div style={adminSection}>
+            <div style={sectionTitle}>Live Timeline Highlight</div>
+            <div style={sectionSub}>Choose what is happening now on the Details page</div>
+
+            <div style={{ display:'flex', gap:10, flexWrap:'wrap', alignItems:'center' }}>
+              <select
+                value={currentTimelineEvent ?? ''}
+                onChange={(e) => updateCurrentTimelineEvent(e.target.value || null)}
+                style={{
+                  minWidth: 260,
+                  padding: '.6rem .75rem',
+                  border: '0.5px solid rgba(201,121,140,.35)',
+                  borderRadius: 10,
+                  fontFamily: 'Montserrat,sans-serif',
+                  fontSize: '.8rem',
+                  color: '#3d2630',
+                  background: '#fff',
+                }}
+              >
+                <option value="">No highlight selected</option>
+                {TIMELINE_OPTIONS.map((option) => (
+                  <option key={option.key} value={option.key}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+
+              <button onClick={() => updateCurrentTimelineEvent(null)} style={adminToolBtn}>
+                Clear Highlight
+              </button>
+            </div>
+
+            <div style={{ marginTop: '1rem', fontSize: '.75rem', color: '#7a5060' }}>
+              Current selection:{' '}
+              <strong>
+                {TIMELINE_OPTIONS.find((option) => option.key === currentTimelineEvent)?.label || 'None'}
+              </strong>
+            </div>
           </div>
         )}
 

@@ -555,7 +555,7 @@ export default function Home() {
                 transition: 'transform 0.3s ease'
               }}
               onMouseOver={(e) => {
-                e.currentTarget.style.transform = 'scale(1.05)'
+                e.currentTarget.style.transform = 'scale(1.05) rotate(10deg)'
               }}
               onMouseOut={(e) => {
                 e.currentTarget.style.transform = 'scale(1)'

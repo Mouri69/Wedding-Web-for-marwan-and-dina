@@ -34,6 +34,12 @@ export interface UploadPhoto {
   created_at: string
 }
 
+export interface TimelineStatus {
+  id: number
+  current_event: string | null
+  updated_at: string
+}
+
 // ── RSVPs ──
 export async function getRSVPs(): Promise<RSVP[]> {
   const { data, error } = await getSupabase()
@@ -224,6 +230,32 @@ export async function deleteUpload(id: number) {
     .delete()
     .eq('id', id)
   if (error) throw error
+}
+
+// ── Timeline Status ──
+export async function getCurrentTimelineEvent(): Promise<string | null> {
+  const { data, error } = await getSupabase()
+    .from('timeline_status')
+    .select('current_event')
+    .eq('id', 1)
+    .maybeSingle()
+  // Graceful fallback when table has not been created yet.
+  if (error) {
+    const msg = String((error as { message?: string }).message || '')
+    if (msg.toLowerCase().includes('timeline_status')) return null
+    throw error
+  }
+  return data?.current_event ?? null
+}
+
+export async function setCurrentTimelineEvent(eventKey: string | null): Promise<string | null> {
+  const { data, error } = await getSupabase()
+    .from('timeline_status')
+    .upsert({ id: 1, current_event: eventKey }, { onConflict: 'id' })
+    .select('current_event')
+    .single()
+  if (error) throw error
+  return data.current_event ?? null
 }
 
 // ── Admin Auth ──
