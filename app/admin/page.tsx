@@ -30,16 +30,29 @@ export default function AdminPage() {
 
   const loadAll = useCallback(async (password: string) => {
     setLoading(true)
-    const q = encPw(password)
-    const [r, m, d] = await Promise.all([
-      api(`/api/admin/rsvps?password=${q}`).then(r => r.json()),
-      api(`/api/admin/messages?password=${q}`).then(r => r.json()),
-      api(`/api/admin/drawings?password=${q}`).then(r => r.json()),
-    ])
-    setRsvps(r)
-    setMessages(m)
-    setDrawings(d)
-    setLoading(false)
+    try {
+      const q = encPw(password)
+      const [rRes, mRes, dRes] = await Promise.all([
+        api(`/api/admin/rsvps?password=${q}`),
+        api(`/api/admin/messages?password=${q}`),
+        api(`/api/admin/drawings?password=${q}`),
+      ])
+      
+      const r = await rRes.json()
+      const m = await mRes.json()
+      const d = await dRes.json()
+      
+      setRsvps(Array.isArray(r) ? r : [])
+      setMessages(Array.isArray(m) ? m : [])
+      setDrawings(Array.isArray(d) ? d : [])
+    } catch (e) {
+      console.error('Failed to load data:', e)
+      setRsvps([])
+      setMessages([])
+      setDrawings([])
+    } finally {
+      setLoading(false)
+    }
   }, [api])
 
   // Auto-login from localStorage
