@@ -125,7 +125,7 @@ export default function Home() {
         justifyContent: 'center',
         textAlign: 'center',
         backgroundImage: 'url(/oil-paint.jpeg)',
-        backgroundPosition: 'center',
+        backgroundPosition: '55% 80%',
         position: 'relative',
         padding: '2rem 1rem'
       }}>
