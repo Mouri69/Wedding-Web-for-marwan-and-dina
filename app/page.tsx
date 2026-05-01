@@ -111,6 +111,11 @@ export default function Home() {
   const [brushSize, setBrushSize] = useState(5)
   const [startCoords, setStartCoords] = useState<{ x: number; y: number } | null>(null)
   const [canvasSnapshot, setCanvasSnapshot] = useState<ImageData | null>(null)
+  const [zoom, setZoom] = useState(1)
+  const [pan, setPan] = useState({ x: 0, y: 0 })
+  const [lastTouchDistance, setLastTouchDistance] = useState<number | null>(null)
+  const [lastTouchCenter, setLastTouchCenter] = useState<{ x: number; y: number } | null>(null)
+  const [isPinching, setIsPinching] = useState(false)
 
   const loadData = async () => {
     try {
@@ -159,15 +164,62 @@ export default function Home() {
     return { x, y }
   }
 
+  const getTouchDistance = (touch1: React.Touch, touch2: React.Touch) => {
+    return Math.sqrt(Math.pow(touch2.clientX - touch1.clientX, 2) + Math.pow(touch2.clientY - touch1.clientY, 2))
+  }
+
+  const getTouchCenter = (touch1: React.Touch, touch2: React.Touch) => {
+    return {
+      x: (touch1.clientX + touch2.clientX) / 2,
+      y: (touch1.clientY + touch2.clientY) / 2
+    }
+  }
+
+  const constrainPanAndZoom = (newZoom: number, newPan: { x: number; y: number }) => {
+    const canvas = canvasRef.current
+    if (!canvas) return { zoom: newZoom, pan: newPan }
+
+    const minZoom = 1
+    const maxZoom = 4
+    const clampedZoom = Math.min(Math.max(newZoom, minZoom), maxZoom)
+
+    const rect = canvas.getBoundingClientRect()
+    const containerWidth = rect.width
+    const containerHeight = rect.height
+    const canvasDisplayWidth = canvas.width * (containerWidth / canvas.width)
+    const canvasDisplayHeight = canvas.height * (containerHeight / canvas.height)
+    
+    const scaledCanvasWidth = canvasDisplayWidth * clampedZoom
+    const scaledCanvasHeight = canvasDisplayHeight * clampedZoom
+
+    const maxPanX = (scaledCanvasWidth - containerWidth) / 2
+    const maxPanY = (scaledCanvasHeight - containerHeight) / 2
+
+    const clampedPanX = Math.min(Math.max(newPan.x, -maxPanX), maxPanX)
+    const clampedPanY = Math.min(Math.max(newPan.y, -maxPanY), maxPanY)
+
+    return { zoom: clampedZoom, pan: { x: clampedPanX, y: clampedPanY } }
+  }
+
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
     if (!ctx) return
-    
+
+    if ('touches' in e && e.touches.length === 2) {
+      setIsPinching(true)
+      setIsDrawing(false)
+      setLastTouchDistance(getTouchDistance(e.touches[0], e.touches[1]))
+      setLastTouchCenter(getTouchCenter(e.touches[0], e.touches[1]))
+      return
+    }
+
+    if (isPinching) return
+
     setIsDrawing(true)
     const { x, y } = getCanvasCoords(e)
-    
+
     if (currentTool === 'brush' || currentTool === 'eraser') {
       ctx.beginPath()
       ctx.moveTo(x, y)
@@ -178,14 +230,40 @@ export default function Home() {
   }
 
   const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
-    if (!isDrawing) return
     const canvas = canvasRef.current
     if (!canvas) return
+
+    if ('touches' in e && e.touches.length === 2) {
+      e.preventDefault()
+      const distance = getTouchDistance(e.touches[0], e.touches[1])
+      const center = getTouchCenter(e.touches[0], e.touches[1])
+
+      if (lastTouchDistance && lastTouchCenter) {
+        const scaleChange = distance / lastTouchDistance
+        const rect = canvas.getBoundingClientRect()
+        const centerX = center.x - rect.left
+        const centerY = center.y - rect.top
+
+        const newPanX = centerX - (centerX - pan.x) * scaleChange
+        const newPanY = centerY - (centerY - pan.y) * scaleChange
+
+        const constrained = constrainPanAndZoom(zoom * scaleChange, { x: newPanX, y: newPanY })
+        setZoom(constrained.zoom)
+        setPan(constrained.pan)
+      }
+
+      setLastTouchDistance(distance)
+      setLastTouchCenter(center)
+      return
+    }
+
+    if (!isDrawing || isPinching) return
+
     const ctx = canvas.getContext('2d')
     if (!ctx) return
-    
+
     const { x, y } = getCanvasCoords(e)
-    
+
     if (currentTool === 'brush') {
       ctx.lineWidth = brushSize
       ctx.lineCap = 'round'
@@ -207,7 +285,7 @@ export default function Home() {
       ctx.lineWidth = brushSize
       ctx.strokeStyle = currentColor
       ctx.lineCap = 'round'
-      
+
       if (currentTool === 'line') {
         ctx.moveTo(startCoords.x, startCoords.y)
         ctx.lineTo(x, y)
@@ -223,6 +301,9 @@ export default function Home() {
     setIsDrawing(false)
     setStartCoords(null)
     setCanvasSnapshot(null)
+    setIsPinching(false)
+    setLastTouchDistance(null)
+    setLastTouchCenter(null)
   }
 
   const clearCanvas = () => {
@@ -231,6 +312,8 @@ export default function Home() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
     ctx.clearRect(0, 0, canvas.width, canvas.height)
+    setZoom(1)
+    setPan({ x: 0, y: 0 })
   }
 
   const handleDrawingSubmit = async (e: React.FormEvent) => {
@@ -776,7 +859,11 @@ export default function Home() {
                       </div>
                     ) : (
                       <div 
-                        onClick={() => setIsDrawingModalOpen(true)}
+                        onClick={() => {
+                          setZoom(1)
+                          setPan({ x: 0, y: 0 })
+                          setIsDrawingModalOpen(true)
+                        }}
                         style={{ 
                           border: '2px dashed rgba(198, 167, 105, 0.5)', 
                           borderRadius: '8px',
@@ -796,6 +883,8 @@ export default function Home() {
                         type="button"
                         onClick={() => {
                           setCanvasImageData(null)
+                          setZoom(1)
+                          setPan({ x: 0, y: 0 })
                           setIsDrawingModalOpen(true)
                         }}
                         style={{
@@ -890,34 +979,36 @@ export default function Home() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 background: '#e8e2da',
-                padding: '10px',
-                overflow: 'auto'
+                overflow: 'hidden',
+                padding: '10px'
               }}>
-                <canvas
-                  ref={canvasRef}
-                  width={1200}
-                  height={900}
-                  style={{
-                    background: '#ffffff',
-                    border: '2px solid #cccccc',
-                    borderRadius: '4px',
-                    touchAction: 'none',
-                    cursor: currentTool === 'eraser' ? 'cell' : 'crosshair',
-                    maxWidth: '100%',
-                    maxHeight: '100%',
-                    width: 'auto',
-                    height: 'auto',
-                    display: 'block',
-                    boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-                  }}
-                  onMouseDown={startDrawing}
-                  onMouseMove={draw}
-                  onMouseUp={stopDrawing}
-                  onMouseLeave={stopDrawing}
-                  onTouchStart={startDrawing}
-                  onTouchMove={draw}
-                  onTouchEnd={stopDrawing}
-                />
+                <div style={{
+                  transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                  transformOrigin: 'center center',
+                  transition: 'transform 0.05s ease-out'
+                }}>
+                  <canvas
+                    ref={canvasRef}
+                    width={1200}
+                    height={900}
+                    style={{
+                      background: '#ffffff',
+                      border: '2px solid #aaaaaa',
+                      borderRadius: '4px',
+                      touchAction: 'none',
+                      cursor: currentTool === 'eraser' ? 'cell' : 'crosshair',
+                      display: 'block',
+                      boxShadow: '0 2px 12px rgba(0,0,0,0.15)'
+                    }}
+                    onMouseDown={startDrawing}
+                    onMouseMove={draw}
+                    onMouseUp={stopDrawing}
+                    onMouseLeave={stopDrawing}
+                    onTouchStart={startDrawing}
+                    onTouchMove={draw}
+                    onTouchEnd={stopDrawing}
+                  />
+                </div>
               </div>
 
               {/* Toolbar */}
