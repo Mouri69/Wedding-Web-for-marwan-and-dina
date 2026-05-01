@@ -129,11 +129,18 @@ export async function deleteDrawing(id: number) {
 }
 
 export async function voteDrawing(id: number) {
-  const { error } = await supabase
+  const { data, error: fetchError } = await supabase
     .from('drawings')
-    .update({ votes: supabase.raw('votes + 1') })
+    .select('votes')
     .eq('id', id)
-  if (error) throw error
+    .single()
+  if (fetchError) throw fetchError
+  
+  const { error: updateError } = await supabase
+    .from('drawings')
+    .update({ votes: (data?.votes || 0) + 1 })
+    .eq('id', id)
+  if (updateError) throw updateError
 }
 
 export async function getApprovedDrawings(): Promise<Drawing[]> {
