@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 interface RSVP { id:number; name:string; answer:string; created_at:string }
 interface Message { id:number; name:string; message:string; approved:boolean; created_at:string }
 interface Drawing { id:number; name:string; image_data:string; votes:number; approved:boolean; rank:number|null; created_at:string }
+interface UploadPhoto { id:number; image_data:string; approved:boolean; created_at:string }
 
 function encPw(password: string) {
   return encodeURIComponent(password.trim())
@@ -18,8 +19,9 @@ export default function AdminPage() {
   const [rsvps, setRsvps] = useState<RSVP[]>([])
   const [messages, setMessages] = useState<Message[]>([])
   const [drawings, setDrawings] = useState<Drawing[]>([])
+  const [uploads, setUploads] = useState<UploadPhoto[]>([])
   const [rsvpFilter, setRsvpFilter] = useState('all')
-  const [activeTab, setActiveTab] = useState<'rsvps'|'messages'|'drawings'>('rsvps')
+  const [activeTab, setActiveTab] = useState<'rsvps'|'messages'|'drawings'|'uploads'>('rsvps')
   const [loading, setLoading] = useState(false)
   const [rankInput, setRankInput] = useState<Record<number, string>>({})
 
@@ -32,24 +34,28 @@ export default function AdminPage() {
     setLoading(true)
     try {
       const q = encPw(password)
-      const [rRes, mRes, dRes] = await Promise.all([
+      const [rRes, mRes, dRes, uRes] = await Promise.all([
         api(`/api/admin/rsvps?password=${q}`),
         api(`/api/admin/messages?password=${q}`),
         api(`/api/admin/drawings?password=${q}`),
+        api(`/api/admin/uploads?password=${q}`),
       ])
       
       const r = await rRes.json()
       const m = await mRes.json()
       const d = await dRes.json()
+      const u = await uRes.json()
       
       setRsvps(Array.isArray(r) ? r : [])
       setMessages(Array.isArray(m) ? m : [])
       setDrawings(Array.isArray(d) ? d : [])
+      setUploads(Array.isArray(u) ? u : [])
     } catch (e) {
       console.error('Failed to load data:', e)
       setRsvps([])
       setMessages([])
       setDrawings([])
+      setUploads([])
     } finally {
       setLoading(false)
     }
@@ -113,6 +119,17 @@ export default function AdminPage() {
     setDrawings(prev => prev.filter(d => d.id!==id))
   }
 
+  async function toggleUploadApproval(id: number, approved: boolean) {
+    await api(`/api/admin/uploads/${id}?password=${encPw(pw)}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ approved }) })
+    setUploads(prev => prev.map(u => u.id===id ? {...u, approved} : u))
+  }
+
+  async function deleteUpload(id: number) {
+    if (!confirm('Delete this photo? Cannot be undone.')) return
+    await api(`/api/admin/uploads/${id}?password=${encPw(pw)}`, { method:'DELETE' })
+    setUploads(prev => prev.filter(u => u.id!==id))
+  }
+
   function fmtDate(iso: string) {
     if (!iso) return ''
     return new Date(iso).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' })
@@ -169,6 +186,7 @@ export default function AdminPage() {
             { num: no,    lbl:"Can't Make It ❌", color:'#e07070' },
             { num: messages.length,  lbl:'Messages 💌',  color:'#c9a96e' },
             { num: drawings.length,  lbl:'Drawings 🎨',  color:'#c97b8c' },
+            { num: uploads.length,   lbl:'Uploads 📸',   color:'#8a3f52' },
           ].map(({ num, lbl, color }) => (
             <div key={lbl} style={{ background:'rgba(255,255,255,0.82)', border:'0.5px solid rgba(201,121,140,.2)', borderRadius:16, padding:'1.2rem 1rem', textAlign:'center' }}>
               <span style={{ display:'block', fontFamily:'Cormorant Garamond,serif', fontSize:'2.8rem', fontWeight:600, color, lineHeight:1 }}>{num}</span>
@@ -179,9 +197,9 @@ export default function AdminPage() {
 
         {/* Tabs */}
         <div style={{ display:'flex', gap:8 }}>
-          {(['rsvps','messages','drawings'] as const).map(tab => (
+          {(['rsvps','messages','drawings','uploads'] as const).map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)} style={{ ...adminToolBtn, background: activeTab===tab ? '#c97b8c' : 'transparent', color: activeTab===tab ? '#fff' : '#7a5060', borderColor: activeTab===tab ? '#c97b8c' : 'rgba(201,121,140,.35)', padding:'.5rem 1.4rem' }}>
-              {tab === 'rsvps' ? '👥 Guests' : tab === 'messages' ? '💌 Messages' : '🎨 Drawings'}
+              {tab === 'rsvps' ? '👥 Guests' : tab === 'messages' ? '💌 Messages' : tab === 'drawings' ? '🎨 Drawings' : '📸 Uploads'}
             </button>
           ))}
         </div>
@@ -300,6 +318,35 @@ export default function AdminPage() {
                       </button>
                     </div>
                     <div style={{ padding:'0 .8rem .8rem', fontSize:'.6rem', color:'#b08898' }}>{fmtDate(d.created_at)}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── UPLOADS TAB ── */}
+        {!loading && activeTab==='uploads' && (
+          <div style={adminSection}>
+            <div style={sectionTitle}>Guest Uploads</div>
+            <div style={sectionSub}>Approve photos to publish them on the public website</div>
+            {uploads.length===0 ? <div style={emptyState}>No uploaded photos yet</div> : (
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))', gap:14 }}>
+                {uploads.map(u => (
+                  <div key={u.id} style={{ border: `0.5px solid ${u.approved ? 'rgba(110,158,130,.4)' : 'rgba(201,121,140,.2)'}`, borderRadius:14, overflow:'hidden', background:'#fff', position:'relative' }}>
+                    {u.approved && <div style={{ position:'absolute', top:8, left:8, background:'rgba(110,158,130,.85)', color:'#fff', fontSize:'.6rem', padding:'.2rem .6rem', borderRadius:10, letterSpacing:'.08em', fontFamily:'Montserrat,sans-serif' }}>LIVE</div>}
+                    <img src={u.image_data} alt={`Upload ${u.id}`} style={{ width:'100%', aspectRatio:'4/3', objectFit:'cover', display:'block' }} />
+                    <div style={{ padding:'0 .8rem .8rem', display:'flex', flexDirection:'column', gap:6, marginTop:'.7rem' }}>
+                      <button
+                        onClick={() => toggleUploadApproval(u.id, !u.approved)}
+                        style={{ width:'100%', padding:'.4rem', border:`0.5px solid ${u.approved ? 'rgba(224,112,112,.4)' : 'rgba(110,158,130,.4)'}`, borderRadius:10, background: u.approved ? 'rgba(224,112,112,.08)' : 'rgba(110,158,130,.08)', color: u.approved ? '#e07070' : '#6e9e82', fontSize:'.7rem', fontFamily:'Montserrat,sans-serif', cursor:'pointer' }}>
+                        {u.approved ? '✕ Remove from Website' : '✓ Publish to Website'}
+                      </button>
+                      <button onClick={() => deleteUpload(u.id)} style={{ width:'100%', padding:'.4rem', border:'0.5px solid rgba(224,112,112,.4)', borderRadius:10, background:'transparent', color:'#e07070', fontSize:'.7rem', fontFamily:'Montserrat,sans-serif', cursor:'pointer' }}>
+                        🗑 Delete Photo
+                      </button>
+                    </div>
+                    <div style={{ padding:'0 .8rem .8rem', fontSize:'.6rem', color:'#b08898' }}>{fmtDate(u.created_at)}</div>
                   </div>
                 ))}
               </div>

@@ -1,13 +1,20 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 
 function useCountdown(target: Date) {
-  const [diff, setDiff] = useState(target.getTime() - Date.now())
+  const [mounted, setMounted] = useState(false)
+  const [diff, setDiff] = useState(0)
+
   useEffect(() => {
+    setMounted(true)
+    setDiff(target.getTime() - Date.now())
     const t = setInterval(() => setDiff(target.getTime() - Date.now()), 1000)
     return () => clearInterval(t)
-  }, [target])
+  }, [target.getTime()]) // 👈 use the primitive number, not the Date object
+
+  if (!mounted) return { d: '--', h: '--', m: '--', s: '--' }
+
   const d = Math.max(0, Math.floor(diff / 86400000))
   const h = Math.max(0, Math.floor((diff % 86400000) / 3600000))
   const m = Math.max(0, Math.floor((diff % 3600000) / 60000))
@@ -89,12 +96,20 @@ interface Drawing {
   created_at: string
 }
 
+interface UploadPhoto {
+  id: number
+  image_data: string
+  approved: boolean
+  created_at: string
+}
+
 export default function Home() {
-  const WEDDING_DATE = new Date('2026-05-26T18:00:00')
+  const WEDDING_DATE = useMemo(() => new Date('2026-05-26T18:00:00'), [])
   const countdown = useCountdown(WEDDING_DATE)
 
   const [messages, setMessages] = useState<Message[]>([])
   const [drawings, setDrawings] = useState<Drawing[]>([])
+  const [uploads, setUploads] = useState<UploadPhoto[]>([])
   const [loading, setLoading] = useState(true)
 
   const [messageForm, setMessageForm] = useState({ name: '', message: '' })
@@ -120,19 +135,29 @@ export default function Home() {
   const [pinchStartCenter, setPinchStartCenter] = useState({ x: 0, y: 0 })
 
   const loadData = async () => {
-    try {
-      const [mRes, dRes] = await Promise.all([
-        fetch('/api/messages'),
-        fetch('/api/drawings')
-      ])
-      setMessages(await mRes.json())
-      setDrawings(await dRes.json())
-    } catch (e) {
-      console.error('Failed to load data:', e)
-    } finally {
-      setLoading(false)
-    }
+  try {
+    const [mRes, dRes, uRes] = await Promise.all([
+      fetch('/api/messages'),
+      fetch('/api/drawings'),
+      fetch('/api/uploads')
+    ])
+
+    const mData = await mRes.json()
+    const dData = await dRes.json()
+    const uData = await uRes.json()
+
+    setMessages(Array.isArray(mData) ? mData : [])
+    setDrawings(Array.isArray(dData) ? dData : [])
+    setUploads(Array.isArray(uData) ? uData : [])
+  } catch (e) {
+    console.error('Failed to load data:', e)
+    setMessages([])
+    setDrawings([])
+    setUploads([])
+  } finally {
+    setLoading(false)
   }
+}
 
   useEffect(() => {
     loadData()
@@ -350,6 +375,7 @@ export default function Home() {
     .filter(d => d.approved)
     .sort((a, b) => (a.rank ?? 999) - (b.rank ?? 999))
     .slice(0, 5)
+  const approvedUploads = uploads.filter(u => u.approved).slice(0, 20)
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--ivory)', overflowX: 'hidden' }}>
@@ -1201,12 +1227,59 @@ export default function Home() {
         </RevealSection>
       </Section>
 
+      {/* Guest Uploads Section */}
+      <Section id="guest-uploads">
+        <RevealSection>
+          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <h2 style={{ fontSize: '2.5rem', fontWeight: 500, color: 'var(--black)', marginBottom: '1rem' }}>
+              Guest Photo Wall
+            </h2>
+            <p style={{ color: 'var(--text-mid)', marginBottom: '1.2rem' }}>
+              Scan the QR code or tap the button below to upload up to 10 photos.
+            </p>
+            <Link
+              href="/upload"
+              style={{
+                display: 'inline-block',
+                padding: '.85rem 1.4rem',
+                borderRadius: 999,
+                background: 'var(--light-gold)',
+                color: '#fff',
+                textDecoration: 'none',
+                fontSize: '.8rem',
+                letterSpacing: '.12em',
+                textTransform: 'uppercase',
+              }}
+            >
+              Open Upload Page
+            </Link>
+            <Divider />
+          </div>
+
+          {approvedUploads.length > 0 ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
+              {approvedUploads.map((photo) => (
+                <div key={photo.id} style={{ borderRadius: '10px', overflow: 'hidden', border: '1px solid rgba(198, 167, 105, 0.2)', background: '#fff' }}>
+                  <img src={photo.image_data} alt={`Guest upload ${photo.id}`} style={{ width: '100%', height: 190, objectFit: 'cover', display: 'block' }} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', color: 'var(--text-mid)', fontStyle: 'italic' }}>
+              Photos will appear here after admin approval.
+            </div>
+          )}
+        </RevealSection>
+      </Section>
+
       {/* Footer */}
       <footer style={{ 
         padding: '3rem 0', 
         textAlign: 'center', 
         borderTop: '1px solid rgba(198, 167, 105, 0.2)'
       }}>
+        <div style={{ marginBottom: '1.2rem' }}>
+        </div>
         <p style={{ 
           fontFamily: 'Playfair Display, serif',
           fontStyle: 'italic',

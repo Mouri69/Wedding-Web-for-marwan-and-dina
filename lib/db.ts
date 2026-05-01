@@ -26,6 +26,13 @@ export interface Drawing {
   created_at: string
 }
 
+export interface UploadPhoto {
+  id: number
+  image_data: string
+  approved: boolean
+  created_at: string
+}
+
 // ── RSVPs ──
 export async function getRSVPs(): Promise<RSVP[]> {
   const { data, error } = await getSupabase()
@@ -153,6 +160,52 @@ export async function getApprovedDrawings(): Promise<Drawing[]> {
     .order('rank', { ascending: true, nullsFirst: false })
   if (error) throw error
   return data || []
+}
+
+// ── Guest Uploads ──
+export async function getUploads(): Promise<UploadPhoto[]> {
+  const { data, error } = await getSupabase()
+    .from('uploads')
+    .select('*')
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data || []
+}
+
+export async function getApprovedUploads(): Promise<UploadPhoto[]> {
+  const { data, error } = await getSupabase()
+    .from('uploads')
+    .select('*')
+    .eq('approved', true)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data || []
+}
+
+export async function addUploads(images: string[]): Promise<UploadPhoto[]> {
+  const rows = images.map((image_data) => ({ image_data, approved: false }))
+  const { data, error } = await getSupabase()
+    .from('uploads')
+    .insert(rows)
+    .select()
+  if (error) throw error
+  return data || []
+}
+
+export async function approveUpload(id: number, approved: boolean) {
+  const { error } = await getSupabase()
+    .from('uploads')
+    .update({ approved })
+    .eq('id', id)
+  if (error) throw error
+}
+
+export async function deleteUpload(id: number) {
+  const { error } = await getSupabase()
+    .from('uploads')
+    .delete()
+    .eq('id', id)
+  if (error) throw error
 }
 
 // ── Admin Auth ──
