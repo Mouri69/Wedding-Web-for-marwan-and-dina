@@ -74,7 +74,7 @@ export default function DetailsPage() {
     }
 
     loadCurrentEvent()
-    const timer = setInterval(loadCurrentEvent, 20000)
+    const timer = setInterval(loadCurrentEvent, 10000)
     return () => {
       cancelled = true
       clearInterval(timer)
