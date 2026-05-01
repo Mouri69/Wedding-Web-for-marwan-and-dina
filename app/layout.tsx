@@ -3,10 +3,10 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Marwan & Dina - Wedding',
-  description: 'Join us to celebrate our wedding on May 26, 2026',
+  description: 'Join us to celebrate our engagment on May 26, 2026',
   openGraph: {
     title: 'Marwan & Dina - Wedding',
-    description: 'Join us to celebrate our wedding on May 26, 2026',
+    description: 'Join us to celebrate our engagment on May 26, 2026',
     images: [
       {
         url: '/og.jpg',
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Marwan & Dina - Wedding',
-    description: 'Join us to celebrate our wedding on May 26, 2026',
+    description: 'Join us to celebrate our engagment on May 26, 2026',
     images: ['/og.jpg'],
   },
 }
