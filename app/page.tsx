@@ -264,6 +264,7 @@ export default function Home() {
         <RevealSection>
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
             <h2 style={{ 
+              fontFamily: '"Great Vibes", cursive',
               fontSize: '2.5rem', 
               fontWeight: 500, 
               color: 'var(--black)', 
