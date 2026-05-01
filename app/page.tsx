@@ -107,6 +107,7 @@ interface UploadPhoto {
 export default function Home() {
   const WEDDING_DATE = useMemo(() => new Date('2026-05-26T18:00:00'), [])
   const countdown = useCountdown(WEDDING_DATE)
+  const MAPS_LINK = 'https://maps.google.com/?q=30.7976455,30.9362545'
 
   const [messages, setMessages] = useState<Message[]>([])
   const [drawings, setDrawings] = useState<Drawing[]>([])
@@ -459,7 +460,7 @@ export default function Home() {
               Are getting engaged
             </p>
             <p style={{ 
-              fontFamily: 'Inter, sans-serif', 
+              fontFamily: 'fantasy', 
               fontSize: 'clamp(1rem, 2.5vw, 1rem)', 
               color: 'white',
               textShadow: '0 2px 8px rgba(0,0,0,0.5)',
@@ -469,7 +470,7 @@ export default function Home() {
               MAY 26 2026
             </p>
             <p style={{ 
-              fontFamily: 'Inter, sans-serif', 
+              fontFamily: 'fantasy', 
               fontSize: 'clamp(1rem, 2.2vw, 1rem)', 
               color: 'white',
               textShadow: '0 2px 8px rgba(0,0,0,0.5)',
@@ -613,16 +614,46 @@ export default function Home() {
             ))}
           </div>
 
-          <div style={{ borderRadius: '8px', overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}>
-            <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3427.177883181425!2d30.936254499999997!3d30.797645499999994!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14f7cb73586b070d%3A0x5a4ecc6f12cf58ca!2z2YbYp9iv2Yog2KfZhNi52KjYryDYp9mE2LHZitin2LbZiiAtIEVsIEFiZCBTcG9ydGluZyBDbHVi!5e0!3m2!1sen!2seg!4v1777583920604!5m2!1sen!2seg"
-              width="100%"
-              height="350"
-              style={{ border: 0 }}
-              allowFullScreen={true}
-              loading="lazy"
+          <a
+            href={MAPS_LINK}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'block',
+              borderRadius: '8px',
+              overflow: 'hidden',
+              boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+              position: 'relative',
+            }}
+            aria-label="Open location in Google Maps"
+          >
+            <img
+              src="/mappicture.jpeg"
+              alt="Map preview - click to open Google Maps"
+              style={{
+                width: '100%',
+                height: '350px',
+                objectFit: 'cover',
+                display: 'block',
+              }}
             />
-          </div>
+            <div
+              style={{
+                position: 'absolute',
+                right: '12px',
+                bottom: '12px',
+                background: 'rgba(0,0,0,0.6)',
+                color: '#fff',
+                padding: '0.45rem 0.7rem',
+                borderRadius: '999px',
+                fontSize: '0.75rem',
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+              }}
+            >
+              Open Map
+            </div>
+          </a>
         </RevealSection>
       </Section>
 
