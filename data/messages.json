@@ -3,7 +3,7 @@
     "id": 1777599402928,
     "name": "Test Guest",
     "message": "Congratulations on your wedding!",
-    "approved": false,
+    "approved": true,
     "created_at": "2026-05-01T01:38:24.734Z"
   }
 ]

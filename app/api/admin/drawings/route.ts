@@ -4,5 +4,5 @@ import { getDrawings, checkAdminPassword } from '@/lib/db'
 export async function GET(req: Request) {
   const pw = new URL(req.url).searchParams.get('password') || ''
   if (!checkAdminPassword(pw)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  return NextResponse.json(getDrawings().sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()))
+  return NextResponse.json(await getDrawings())
 }

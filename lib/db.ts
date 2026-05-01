@@ -1,27 +1,6 @@
 import fs from 'fs'
 import path from 'path'
 
-const DB_PATH = path.join(process.cwd(), 'data')
-
-function ensureDir() {
-  if (!fs.existsSync(DB_PATH)) fs.mkdirSync(DB_PATH, { recursive: true })
-}
-
-function readFile<T>(name: string, def: T): T {
-  ensureDir()
-  const filePath = path.join(DB_PATH, `${name}.json`)
-  if (!fs.existsSync(filePath)) return def
-  return JSON.parse(fs.readFileSync(filePath, 'utf-8'))
-}
-
-function writeFile<T>(name: string, data: T) {
-  ensureDir()
-  fs.writeFileSync(path.join(DB_PATH, `${name}.json`), JSON.stringify(data, null, 2))
-}
-
-let idCounter = Date.now()
-function nextId() { return ++idCounter }
-
 // ── Types ──
 export interface RSVP {
   id: number
@@ -48,67 +27,146 @@ export interface Drawing {
   created_at: string
 }
 
-// ── RSVPs ──
-export function getRSVPs(): RSVP[] {
-  return readFile<RSVP[]>('rsvps', [])
+// ── File helpers ──
+const dataDir = path.join(process.cwd(), 'data')
+const messagesPath = path.join(dataDir, 'messages.json')
+const drawingsPath = path.join(dataDir, 'drawings.json')
+
+function ensureDataDir() {
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true })
+  }
 }
-export function addRSVP(name: string, answer: RSVP['answer']): RSVP {
-  const rsvps = getRSVPs()
-  const entry: RSVP = { id: nextId(), name, answer, created_at: new Date().toISOString() }
-  rsvps.push(entry)
-  writeFile('rsvps', rsvps)
-  return entry
+
+function readJSON<T>(filePath: string, defaultData: T): T {
+  ensureDataDir()
+  if (!fs.existsSync(filePath)) {
+    fs.writeFileSync(filePath, JSON.stringify(defaultData, null, 2))
+    return defaultData
+  }
+  try {
+    const content = fs.readFileSync(filePath, 'utf8')
+    return JSON.parse(content)
+  } catch {
+    return defaultData
+  }
+}
+
+function writeJSON<T>(filePath: string, data: T) {
+  ensureDataDir()
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2))
+}
+
+// ── RSVPs ──
+export async function getRSVPs(): Promise<RSVP[]> {
+  const rsvpsPath = path.join(dataDir, 'rsvps.json')
+  return readJSON<RSVP[]>(rsvpsPath, []).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+}
+
+export async function addRSVP(name: string, answer: RSVP['answer']): Promise<RSVP> {
+  const rsvpsPath = path.join(dataDir, 'rsvps.json')
+  const rsvps = readJSON<RSVP[]>(rsvpsPath, [])
+  const rsvp: RSVP = {
+    id: Date.now(),
+    name,
+    answer,
+    created_at: new Date().toISOString()
+  }
+  rsvps.push(rsvp)
+  writeJSON(rsvpsPath, rsvps)
+  return rsvp
 }
 
 // ── Messages ──
-export function getMessages(): Message[] {
-  return readFile<Message[]>('messages', [])
+export async function getMessages(): Promise<Message[]> {
+  return readJSON<Message[]>(messagesPath, []).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 }
-export function addMessage(name: string, message: string): Message {
-  const msgs = getMessages()
-  const entry: Message = { id: nextId(), name, message, approved: false, created_at: new Date().toISOString() }
-  msgs.push(entry)
-  writeFile('messages', msgs)
-  return entry
+
+export async function addMessage(name: string, message: string): Promise<Message> {
+  const messages = readJSON<Message[]>(messagesPath, [])
+  const newMessage: Message = {
+    id: Date.now(),
+    name,
+    message,
+    approved: false,
+    created_at: new Date().toISOString()
+  }
+  messages.push(newMessage)
+  writeJSON(messagesPath, messages)
+  return newMessage
 }
-export function approveMessage(id: number, approved: boolean) {
-  const msgs = getMessages()
-  const m = msgs.find(m => m.id === id)
-  if (m) { m.approved = approved; writeFile('messages', msgs) }
+
+export async function approveMessage(id: number, approved: boolean) {
+  const messages = readJSON<Message[]>(messagesPath, [])
+  const index = messages.findIndex(m => m.id === id)
+  if (index !== -1) {
+    messages[index].approved = approved
+    writeJSON(messagesPath, messages)
+  }
 }
-export function deleteMessage(id: number) {
-  writeFile('messages', getMessages().filter(m => m.id !== id))
+
+export async function deleteMessage(id: number) {
+  const messages = readJSON<Message[]>(messagesPath, [])
+  const filtered = messages.filter(m => m.id !== id)
+  writeJSON(messagesPath, filtered)
 }
-export function getApprovedMessages(): Message[] {
-  return getMessages().filter(m => m.approved)
+
+export async function getApprovedMessages(): Promise<Message[]> {
+  return readJSON<Message[]>(messagesPath, [])
+    .filter(m => m.approved)
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 }
 
 // ── Drawings ──
-export function getDrawings(): Drawing[] {
-  return readFile<Drawing[]>('drawings', [])
+export async function getDrawings(): Promise<Drawing[]> {
+  return readJSON<Drawing[]>(drawingsPath, []).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 }
-export function addDrawing(name: string, image_data: string): Drawing {
-  const drawings = getDrawings()
-  const entry: Drawing = { id: nextId(), name, image_data, votes: 0, approved: false, rank: null, created_at: new Date().toISOString() }
-  drawings.push(entry)
-  writeFile('drawings', drawings)
-  return entry
+
+export async function addDrawing(name: string, image_data: string): Promise<Drawing> {
+  const drawings = readJSON<Drawing[]>(drawingsPath, [])
+  const newDrawing: Drawing = {
+    id: Date.now(),
+    name,
+    image_data,
+    votes: 0,
+    approved: false,
+    rank: null,
+    created_at: new Date().toISOString()
+  }
+  drawings.push(newDrawing)
+  writeJSON(drawingsPath, drawings)
+  return newDrawing
 }
-export function approveDrawing(id: number, approved: boolean, rank: number | null = null) {
-  const drawings = getDrawings()
-  const d = drawings.find(d => d.id === id)
-  if (d) { d.approved = approved; d.rank = rank; writeFile('drawings', drawings) }
+
+export async function approveDrawing(id: number, approved: boolean, rank: number | null = null) {
+  const drawings = readJSON<Drawing[]>(drawingsPath, [])
+  const index = drawings.findIndex(d => d.id === id)
+  if (index !== -1) {
+    drawings[index].approved = approved
+    if (rank !== undefined) {
+      drawings[index].rank = rank
+    }
+    writeJSON(drawingsPath, drawings)
+  }
 }
-export function deleteDrawing(id: number) {
-  writeFile('drawings', getDrawings().filter(d => d.id !== id))
+
+export async function deleteDrawing(id: number) {
+  const drawings = readJSON<Drawing[]>(drawingsPath, [])
+  const filtered = drawings.filter(d => d.id !== id)
+  writeJSON(drawingsPath, filtered)
 }
-export function voteDrawing(id: number) {
-  const drawings = getDrawings()
-  const d = drawings.find(d => d.id === id)
-  if (d) { d.votes++; writeFile('drawings', drawings) }
+
+export async function voteDrawing(id: number) {
+  const drawings = readJSON<Drawing[]>(drawingsPath, [])
+  const index = drawings.findIndex(d => d.id === id)
+  if (index !== -1) {
+    drawings[index].votes += 1
+    writeJSON(drawingsPath, drawings)
+  }
 }
-export function getApprovedDrawings(): Drawing[] {
-  return getDrawings()
+
+export async function getApprovedDrawings(): Promise<Drawing[]> {
+  return readJSON<Drawing[]>(drawingsPath, [])
     .filter(d => d.approved)
     .sort((a, b) => (a.rank ?? 999) - (b.rank ?? 999))
 }
