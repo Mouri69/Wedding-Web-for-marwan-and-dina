@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     description: 'Join us to celebrate our engagment on May 26, 2026',
     images: [
       {
-        url: '/og.jpg',
+        url: '/og.png',
         width: 1200,
         height: 630,
         alt: 'Marwan & Dena Engagment',
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Marwan & Dena - Engagment',
     description: 'Join us to celebrate our engagment on May 26, 2026',
-    images: ['/og.jpg'],
+    images: ['/og.png'],
   },
 }
 
