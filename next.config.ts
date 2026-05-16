@@ -3,7 +3,7 @@ import type { NextConfig } from 'next'
 const nextConfig: NextConfig = {
   async redirects() {
     return [
-      { source: '/og.png', destination: '/og3.png', permanent: true },
+      { source: '/og.jpg', destination: '/og3.png', permanent: true },
       { source: '/og2.png', destination: '/og3.png', permanent: true },
     ]
   },
