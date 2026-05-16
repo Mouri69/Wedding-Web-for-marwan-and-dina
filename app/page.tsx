@@ -105,9 +105,9 @@ interface UploadPhoto {
 }
 
 export default function Home() {
-  const WEDDING_DATE = useMemo(() => new Date('2026-05-26T18:00:00'), [])
-  const countdown = useCountdown(WEDDING_DATE)
-  const MAPS_LINK = 'https://maps.google.com/?q=30.7976455,30.9362545'
+  const Engagment_DATE = useMemo(() => new Date('2026-05-26T18:00:00'), [])
+  const countdown = useCountdown(Engagment_DATE)
+  const MAPS_LINK = 'https://maps.app.goo.gl/YcyBP5eiY3cNR4d1A'
 
   const [messages, setMessages] = useState<Message[]>([])
   const [drawings, setDrawings] = useState<Drawing[]>([])

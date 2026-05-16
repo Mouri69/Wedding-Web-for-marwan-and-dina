@@ -126,12 +126,12 @@ export default function UploadPage() {
     <div style={{ minHeight: '100vh', background: 'linear-gradient(155deg,#fdf0f3,#fdf8f5,#f8efe8)', padding: '2rem 1rem 3rem' }}>
       <div style={{ maxWidth: 880, margin: '0 auto' }}>
         <Link href="/" style={{ textDecoration: 'none', color: '#8a3f52', fontSize: '.85rem' }}>
-          ← Back to wedding page
+          ← Back to Engagment page
         </Link>
 
         <div style={{ marginTop: '1rem', background: 'rgba(255,255,255,0.9)', border: '0.5px solid rgba(201,121,140,.25)', borderRadius: 18, padding: '1.5rem' }}>
           <h1 style={{ margin: 0, fontFamily: 'Cormorant Garamond, serif', fontSize: '2.1rem', color: '#8a3f52', fontWeight: 500 }}>
-            Upload Wedding Media
+            Upload Engagment Media
           </h1>
           <p style={{ marginTop: '.7rem', color: '#7a5060', fontSize: '.95rem' }}>
             You can upload images and videos. Max {MAX_FILES} total uploads per person, and each video is max 50 MB.

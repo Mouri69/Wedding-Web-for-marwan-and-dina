@@ -2,24 +2,24 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Marwan & Dina - Wedding',
+  title: 'Marwan & Dena - Engagment',
   description: 'Join us to celebrate our engagment on May 26, 2026',
   openGraph: {
-    title: 'Marwan & Dina - Wedding',
+    title: 'Marwan & Dena - Engagment',
     description: 'Join us to celebrate our engagment on May 26, 2026',
     images: [
       {
         url: '/og.jpg',
         width: 1200,
         height: 630,
-        alt: 'Marwan & Dina Wedding',
+        alt: 'Marwan & Dena Engagment',
       },
     ],
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Marwan & Dina - Wedding',
+    title: 'Marwan & Dena - Engagment',
     description: 'Join us to celebrate our engagment on May 26, 2026',
     images: ['/og.jpg'],
   },
