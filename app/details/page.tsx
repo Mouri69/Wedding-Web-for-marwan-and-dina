@@ -6,7 +6,6 @@ const TIMELINE_ITEMS = [
   { key: 'meet-greet', label: 'Meet & Greet', icon: '🤝' },
   { key: 'ceremony', label: 'The Ceremony', icon: '💍' },
   { key: 'party', label: 'Party', icon: '🪩' },
-  { key: 'caricateur-sketch', label: 'Caricateur Sketch', icon: '🎨' },
   { key: 'photos', label: 'Photos', icon: '📸' },
   { key: 'dinner', label: 'Dinner', icon: '🍽️' },
   { key: 'break', label: 'Break', icon: '🕑' },
