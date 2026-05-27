@@ -4,10 +4,61 @@ import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 const MAX_FILES = 10
-const MAX_VIDEO_BYTES = 50 * 1024 * 1024
+const MAX_VIDEO_BYTES = 3 * 1024 * 1024 // 3 MB (due to serverless function body limit)
 const USED_UPLOAD_SLOTS_KEY = 'guestUploadUsedSlots'
 
+function compressImage(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.src = URL.createObjectURL(file)
+    img.onload = () => {
+      URL.revokeObjectURL(img.src)
+      const canvas = document.createElement('canvas')
+      const MAX_WIDTH = 1200
+      const MAX_HEIGHT = 1200
+      let width = img.width
+      let height = img.height
+
+      if (width > height) {
+        if (width > MAX_WIDTH) {
+          height = Math.round((height * MAX_WIDTH) / width)
+          width = MAX_WIDTH
+        }
+      } else {
+        if (height > MAX_HEIGHT) {
+          width = Math.round((width * MAX_HEIGHT) / height)
+          height = MAX_HEIGHT
+        }
+      }
+
+      canvas.width = width
+      canvas.height = height
+
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        reject(new Error('Canvas context could not be created'))
+        return
+      }
+
+      ctx.drawImage(img, 0, 0, width, height)
+      resolve(canvas.toDataURL('image/jpeg', 0.8))
+    }
+    img.onerror = () => {
+      URL.revokeObjectURL(img.src)
+      reject(new Error('Failed to load image for compression'))
+    }
+  })
+}
+
 async function fileToDataUrl(file: File): Promise<string> {
+  if (file.type.startsWith('image/') && file.type !== 'image/gif' && file.size > 500 * 1024) {
+    try {
+      return await compressImage(file)
+    } catch (err) {
+      console.error('Image compression failed, falling back to original:', err)
+    }
+  }
+
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = () => resolve(String(reader.result || ''))
@@ -58,7 +109,7 @@ export default function UploadPage() {
       (f) => f.type.startsWith('video/') && f.size > MAX_VIDEO_BYTES
     )
     if (tooLargeVideo) {
-      setStatus({ type: 'error', text: 'Max file size reached. Video limit is 50 MB.' })
+      setStatus({ type: 'error', text: 'Max file size reached. Video limit is 3 MB.' })
       return
     }
 
@@ -134,7 +185,7 @@ export default function UploadPage() {
             Upload Engagment Media
           </h1>
           <p style={{ marginTop: '.7rem', color: '#7a5060', fontSize: '.95rem' }}>
-            You can upload images and videos. Max {MAX_FILES} total uploads per person, and each video is max 50 MB.
+            You can upload images and videos. Max {MAX_FILES} total uploads per person. (Videos are limited to 3 MB).
           </p>
 
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: '1rem' }}>

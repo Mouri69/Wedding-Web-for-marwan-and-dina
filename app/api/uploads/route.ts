@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { addUploads, getApprovedUploads } from '@/lib/db'
 
 const MAX_UPLOADS_PER_REQUEST = 10
-const MAX_VIDEO_BYTES = 50 * 1024 * 1024
+const MAX_VIDEO_BYTES = 3 * 1024 * 1024 // 3 MB (due to serverless function body limit)
 
 function isDataMedia(value: unknown): value is string {
   return (
@@ -61,7 +61,7 @@ export async function POST(req: Request) {
     for (const item of media) {
       if (item.startsWith('data:video/') && getDataUriBytes(item) > MAX_VIDEO_BYTES) {
         return NextResponse.json(
-          { error: 'Max file size reached. Video limit is 50 MB.' },
+          { error: 'Max file size reached. Video limit is 3 MB.' },
           { status: 400 }
         )
       }
