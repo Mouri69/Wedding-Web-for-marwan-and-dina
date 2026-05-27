@@ -2,12 +2,20 @@
 
 import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { getSupabase } from '@/lib/supabase'
 
 const MAX_FILES = 10
-const MAX_VIDEO_BYTES = 3 * 1024 * 1024 // 3 MB (due to serverless function body limit)
+const MAX_VIDEO_BYTES = 50 * 1024 * 1024 // 50 MB limit (now uploaded directly to Storage, bypassing Vercel)
 const USED_UPLOAD_SLOTS_KEY = 'guestUploadUsedSlots'
 
-function compressImage(file: File): Promise<string> {
+interface UploadItem {
+  preview: string
+  file: File | Blob
+  name: string
+  type: string
+}
+
+function compressImage(file: File): Promise<{ dataUrl: string; blob: Blob }> {
   return new Promise((resolve, reject) => {
     const img = new Image()
     img.src = URL.createObjectURL(file)
@@ -41,7 +49,15 @@ function compressImage(file: File): Promise<string> {
       }
 
       ctx.drawImage(img, 0, 0, width, height)
-      resolve(canvas.toDataURL('image/jpeg', 0.8))
+      
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.8)
+      canvas.toBlob((blob) => {
+        if (blob) {
+          resolve({ dataUrl, blob })
+        } else {
+          reject(new Error('Canvas toBlob failed'))
+        }
+      }, 'image/jpeg', 0.8)
     }
     img.onerror = () => {
       URL.revokeObjectURL(img.src)
@@ -50,25 +66,39 @@ function compressImage(file: File): Promise<string> {
   })
 }
 
-async function fileToDataUrl(file: File): Promise<string> {
+async function processFile(file: File): Promise<UploadItem> {
   if (file.type.startsWith('image/') && file.type !== 'image/gif' && file.size > 500 * 1024) {
     try {
-      return await compressImage(file)
+      const { dataUrl, blob } = await compressImage(file)
+      const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "")
+      return {
+        preview: dataUrl,
+        file: blob,
+        name: `${nameWithoutExt}.jpg`,
+        type: 'image/jpeg'
+      }
     } catch (err) {
       console.error('Image compression failed, falling back to original:', err)
     }
   }
 
-  return new Promise((resolve, reject) => {
+  const dataUrl = await new Promise<string>((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = () => resolve(String(reader.result || ''))
     reader.onerror = () => reject(new Error('Failed to read file'))
     reader.readAsDataURL(file)
   })
+
+  return {
+    preview: dataUrl,
+    file: file,
+    name: file.name,
+    type: file.type
+  }
 }
 
 export default function UploadPage() {
-  const [media, setMedia] = useState<string[]>([])
+  const [uploadItems, setUploadItems] = useState<UploadItem[]>([])
   const [usedSlots, setUsedSlots] = useState<number>(() => {
     if (typeof window === 'undefined') return 0
     const saved = Number(localStorage.getItem(USED_UPLOAD_SLOTS_KEY) || 0)
@@ -91,7 +121,7 @@ export default function UploadPage() {
     localStorage.setItem(USED_UPLOAD_SLOTS_KEY, String(Math.min(MAX_FILES, Math.max(0, usedSlots))))
   }, [usedSlots])
 
-  const left = useMemo(() => Math.max(0, MAX_FILES - usedSlots - media.length), [usedSlots, media.length])
+  const left = useMemo(() => Math.max(0, MAX_FILES - usedSlots - uploadItems.length), [usedSlots, uploadItems.length])
 
   async function handleSelectFiles(list: FileList | null) {
     if (!list) return
@@ -114,7 +144,7 @@ export default function UploadPage() {
     if (tooLargeVideos.length > 0) {
       tooLargeVideos.forEach((v) => {
         const sizeMb = (v.size / (1024 * 1024)).toFixed(1)
-        errors.push(`Video "${v.name}" is too large (${sizeMb} MB). Video limit is 3 MB.`)
+        errors.push(`Video "${v.name}" is too large (${sizeMb} MB). Video limit is 50 MB.`)
       })
     }
 
@@ -162,21 +192,21 @@ export default function UploadPage() {
       setStatus(null)
     }
 
-    const encoded = await Promise.all(allowed.map(fileToDataUrl))
-    setMedia((prev) => [...prev, ...encoded].slice(0, MAX_FILES))
+    const processed = await Promise.all(allowed.map(processFile))
+    setUploadItems((prev) => [...prev, ...processed].slice(0, MAX_FILES))
   }
 
   function removeMedia(index: number) {
-    setMedia((prev) => prev.filter((_, i) => i !== index))
+    setUploadItems((prev) => prev.filter((_, i) => i !== index))
   }
 
   async function submitUploads() {
-    if (!media.length) {
+    if (!uploadItems.length) {
       setStatus({ type: 'error', text: 'Please add at least one photo or video.' })
       return
     }
 
-    if (usedSlots + media.length > MAX_FILES) {
+    if (usedSlots + uploadItems.length > MAX_FILES) {
       setStatus({ type: 'error', text: `Upload limit reached. You can upload max ${MAX_FILES} files.` })
       return
     }
@@ -184,26 +214,51 @@ export default function UploadPage() {
     setSubmitting(true)
     setStatus(null)
     try {
+      const supabase = getSupabase()
+      const imageUrls: string[] = []
+
+      for (let i = 0; i < uploadItems.length; i++) {
+        const item = uploadItems[i]
+        const fileExt = item.name.split('.').pop() || 'jpg'
+        const randomStr = Math.random().toString(36).substring(2, 10)
+        const fileName = `${Date.now()}-${randomStr}.${fileExt}`
+
+        const { error: uploadError } = await supabase.storage
+          .from('wedding-uploads')
+          .upload(fileName, item.file, {
+            contentType: item.type,
+            cacheControl: '3600',
+            upsert: false
+          })
+
+        if (uploadError) {
+          throw new Error(`Failed to upload "${item.name}": ${uploadError.message}`)
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('wedding-uploads')
+          .getPublicUrl(fileName)
+
+        imageUrls.push(publicUrl)
+      }
+
       const res = await fetch('/api/uploads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ media }),
+        body: JSON.stringify({ media: imageUrls }),
       })
 
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
-        if (res.status === 413) {
-          throw new Error('Upload payload too large. Please select fewer items or smaller videos.')
-        }
         throw new Error(data?.error || 'Upload failed')
       }
 
       const persisted = Number(localStorage.getItem(USED_UPLOAD_SLOTS_KEY) || usedSlots || 0)
       const currentUsed = Number.isFinite(persisted) && persisted > 0 ? persisted : 0
-      const nextUsed = Math.min(MAX_FILES, currentUsed + media.length)
+      const nextUsed = Math.min(MAX_FILES, currentUsed + uploadItems.length)
       localStorage.setItem(USED_UPLOAD_SLOTS_KEY, String(nextUsed))
       setUsedSlots(nextUsed)
-      setMedia([])
+      setUploadItems([])
       setStatus({
         type: 'ok',
         text: 'Upload successful. Media will appear after admin approval.',
@@ -230,7 +285,7 @@ export default function UploadPage() {
             Upload Engagment Media
           </h1>
           <p style={{ marginTop: '.7rem', color: '#7a5060', fontSize: '.95rem' }}>
-            You can upload images and videos. Max {MAX_FILES} total uploads per person. (Videos are limited to 3 MB).
+            You can upload images and videos. Max {MAX_FILES} total uploads per person. (Videos are limited to 50 MB).
           </p>
 
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: '1rem' }}>
@@ -273,14 +328,14 @@ export default function UploadPage() {
             onChange={(e) => handleSelectFiles(e.target.files)}
           />
 
-          {media.length > 0 && (
+          {uploadItems.length > 0 && (
             <div style={{ marginTop: '1.2rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(120px,1fr))', gap: 10 }}>
-              {media.map((src, idx) => (
-                <div key={`${idx}-${src.slice(0, 20)}`} style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(201,121,140,.2)' }}>
-                  {src.startsWith('data:video/') ? (
-                    <video src={src} style={{ width: '100%', height: 120, objectFit: 'cover', display: 'block' }} muted playsInline />
+              {uploadItems.map((item, idx) => (
+                <div key={`${idx}-${item.preview.slice(0, 20)}`} style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(201,121,140,.2)' }}>
+                  {item.preview.startsWith('data:video/') ? (
+                    <video src={item.preview} style={{ width: '100%', height: 120, objectFit: 'cover', display: 'block' }} muted playsInline />
                   ) : (
-                    <img src={src} alt={`Selected ${idx + 1}`} style={{ width: '100%', height: 120, objectFit: 'cover', display: 'block' }} />
+                    <img src={item.preview} alt={`Selected ${idx + 1}`} style={{ width: '100%', height: 120, objectFit: 'cover', display: 'block' }} />
                   )}
                   <button
                     type="button"
@@ -297,8 +352,8 @@ export default function UploadPage() {
           <button
             type="button"
             onClick={submitUploads}
-            disabled={!media.length || submitting}
-            style={{ marginTop: '1.3rem', width: '100%', padding: '.95rem 1rem', borderRadius: 40, border: 'none', background: !media.length || submitting ? '#d8c1c9' : '#c97b8c', color: '#fff', cursor: !media.length || submitting ? 'not-allowed' : 'pointer', fontSize: '.85rem', letterSpacing: '.12em', textTransform: 'uppercase' }}
+            disabled={!uploadItems.length || submitting}
+            style={{ marginTop: '1.3rem', width: '100%', padding: '.95rem 1rem', borderRadius: 40, border: 'none', background: !uploadItems.length || submitting ? '#d8c1c9' : '#c97b8c', color: '#fff', cursor: !uploadItems.length || submitting ? 'not-allowed' : 'pointer', fontSize: '.85rem', letterSpacing: '.12em', textTransform: 'uppercase' }}
           >
             {submitting ? 'Uploading...' : 'Upload Files'}
           </button>

@@ -17,6 +17,19 @@ const TIMELINE_OPTIONS = [
   { key: 'farewell', label: 'Farewell' },
 ]
 
+function isVideo(src: string): boolean {
+  if (!src) return false
+  if (src.startsWith('data:video/')) return true
+  const cleanSrc = src.split('?')[0].toLowerCase()
+  return (
+    cleanSrc.endsWith('.mp4') ||
+    cleanSrc.endsWith('.webm') ||
+    cleanSrc.endsWith('.ogg') ||
+    cleanSrc.endsWith('.mov') ||
+    cleanSrc.endsWith('.quicktime')
+  )
+}
+
 function encPw(password: string) {
   return encodeURIComponent(password.trim())
 }
@@ -362,7 +375,7 @@ export default function AdminPage() {
                 {uploads.map(u => (
                   <div key={u.id} style={{ border: `0.5px solid ${u.approved ? 'rgba(110,158,130,.4)' : 'rgba(201,121,140,.2)'}`, borderRadius:14, overflow:'hidden', background:'#fff', position:'relative' }}>
                     {u.approved && <div style={{ position:'absolute', top:8, left:8, background:'rgba(110,158,130,.85)', color:'#fff', fontSize:'.6rem', padding:'.2rem .6rem', borderRadius:10, letterSpacing:'.08em', fontFamily:'Montserrat,sans-serif' }}>LIVE</div>}
-                    {u.image_data.startsWith('data:video/') ? (
+                    {isVideo(u.image_data) ? (
                       <video src={u.image_data} style={{ width:'100%', aspectRatio:'4/3', objectFit:'cover', display:'block' }} muted playsInline />
                     ) : (
                       <img src={u.image_data} alt={`Upload ${u.id}`} style={{ width:'100%', aspectRatio:'4/3', objectFit:'cover', display:'block' }} />

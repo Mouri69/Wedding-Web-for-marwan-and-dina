@@ -2,6 +2,19 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 
+function isVideo(src: string): boolean {
+  if (!src) return false
+  if (src.startsWith('data:video/')) return true
+  const cleanSrc = src.split('?')[0].toLowerCase()
+  return (
+    cleanSrc.endsWith('.mp4') ||
+    cleanSrc.endsWith('.webm') ||
+    cleanSrc.endsWith('.ogg') ||
+    cleanSrc.endsWith('.mov') ||
+    cleanSrc.endsWith('.quicktime')
+  )
+}
+
 function useCountdown(target: Date) {
   const [mounted, setMounted] = useState(false)
   const [diff, setDiff] = useState(0)
@@ -1312,7 +1325,7 @@ export default function Home() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
               {approvedUploads.map((photo) => (
                 <div key={photo.id} style={{ borderRadius: '10px', overflow: 'hidden', border: '1px solid rgba(198, 167, 105, 0.2)', background: '#fff' }}>
-                  {photo.image_data.startsWith('data:video/') ? (
+                  {isVideo(photo.image_data) ? (
                     <video
                       src={photo.image_data}
                       onClick={() => setSelectedUpload(photo.image_data)}
@@ -1402,7 +1415,7 @@ export default function Home() {
             >
               ✕
             </button>
-            {selectedUpload.startsWith('data:video/') ? (
+            {isVideo(selectedUpload) ? (
               <video
                 src={selectedUpload}
                 controls

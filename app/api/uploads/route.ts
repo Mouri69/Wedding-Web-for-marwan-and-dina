@@ -4,12 +4,23 @@ import { addUploads, getApprovedUploads } from '@/lib/db'
 const MAX_UPLOADS_PER_REQUEST = 10
 const MAX_VIDEO_BYTES = 3 * 1024 * 1024 // 3 MB (due to serverless function body limit)
 
-function isDataMedia(value: unknown): value is string {
-  return (
-    typeof value === 'string' &&
+function isValidMedia(value: unknown): value is string {
+  if (typeof value !== 'string') return false
+  
+  // Allow Base64 images/videos
+  if (
     (value.startsWith('data:image/') || value.startsWith('data:video/')) &&
     value.includes(';base64,')
-  )
+  ) {
+    return true
+  }
+
+  // Allow http/https URLs (e.g. Supabase Storage public URLs)
+  if (value.startsWith('http://') || value.startsWith('https://')) {
+    return true
+  }
+
+  return false
 }
 
 function getDataUriBytes(dataUri: string) {
@@ -51,7 +62,7 @@ export async function POST(req: Request) {
       )
     }
 
-    if (!media.every(isDataMedia)) {
+    if (!media.every(isValidMedia)) {
       return NextResponse.json(
         { error: 'Only images and videos are allowed' },
         { status: 400 }
