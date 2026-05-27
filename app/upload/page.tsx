@@ -76,7 +76,7 @@ export default function UploadPage() {
     return Math.min(MAX_FILES, saved)
   })
   const [submitting, setSubmitting] = useState(false)
-  const [status, setStatus] = useState<{ type: 'ok' | 'error'; text: string } | null>(null)
+  const [status, setStatus] = useState<{ type: 'ok' | 'error'; text: string; details?: string[] } | null>(null)
   const galleryInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
 
@@ -95,27 +95,69 @@ export default function UploadPage() {
 
   async function handleSelectFiles(list: FileList | null) {
     if (!list) return
-    const files = Array.from(list).filter(
+    const allFiles = Array.from(list)
+    const errors: string[] = []
+
+    // 1. Check for non-image/non-video files
+    const validFormatFiles = allFiles.filter(
       (f) => f.type.startsWith('image/') || f.type.startsWith('video/')
     )
-    if (!files.length) return
-
-    if (left <= 0) {
-      setStatus({ type: 'error', text: `You already used all ${MAX_FILES} upload slots.` })
-      return
+    const invalidCount = allFiles.length - validFormatFiles.length
+    if (invalidCount > 0) {
+      errors.push(`${invalidCount} file(s) ignored (only images and videos are supported).`)
     }
 
-    const tooLargeVideo = files.find(
+    // 2. Check video size limit
+    const tooLargeVideos = validFormatFiles.filter(
       (f) => f.type.startsWith('video/') && f.size > MAX_VIDEO_BYTES
     )
-    if (tooLargeVideo) {
-      setStatus({ type: 'error', text: 'Max file size reached. Video limit is 3 MB.' })
+    if (tooLargeVideos.length > 0) {
+      tooLargeVideos.forEach((v) => {
+        const sizeMb = (v.size / (1024 * 1024)).toFixed(1)
+        errors.push(`Video "${v.name}" is too large (${sizeMb} MB). Video limit is 3 MB.`)
+      })
+    }
+
+    // Filter out too large videos
+    const sizeOkFiles = validFormatFiles.filter(
+      (f) => !(f.type.startsWith('video/') && f.size > MAX_VIDEO_BYTES)
+    )
+
+    if (sizeOkFiles.length === 0) {
+      if (errors.length > 0) {
+        setStatus({
+          type: 'error',
+          text: 'No valid files selected:',
+          details: errors,
+        })
+      }
       return
     }
 
-    const allowed = files.slice(0, left)
-    if (allowed.length < files.length) {
-      setStatus({ type: 'error', text: `Only ${MAX_FILES} total uploads are allowed per person.` })
+    // 3. Check slots limit
+    if (left <= 0) {
+      errors.push(`No slots left. You have already reached the limit of ${MAX_FILES} uploads.`)
+      setStatus({
+        type: 'error',
+        text: 'Cannot add files:',
+        details: errors,
+      })
+      return
+    }
+
+    let allowed = sizeOkFiles
+    if (sizeOkFiles.length > left) {
+      errors.push(`Only ${left} slot(s) left. Ignored ${sizeOkFiles.length - left} file(s).`)
+      allowed = sizeOkFiles.slice(0, left)
+    }
+
+    // Show errors if any
+    if (errors.length > 0) {
+      setStatus({
+        type: 'error',
+        text: 'Some files had issues:',
+        details: errors,
+      })
     } else {
       setStatus(null)
     }
@@ -150,6 +192,9 @@ export default function UploadPage() {
 
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
+        if (res.status === 413) {
+          throw new Error('Upload payload too large. Please select fewer items or smaller videos.')
+        }
         throw new Error(data?.error || 'Upload failed')
       }
 
@@ -259,9 +304,18 @@ export default function UploadPage() {
           </button>
 
           {status && (
-            <p style={{ marginTop: '.9rem', color: status.type === 'ok' ? '#6e9e82' : '#e07070', fontSize: '.88rem' }}>
-              {status.text}
-            </p>
+            <div style={{ marginTop: '.9rem', color: status.type === 'ok' ? '#6e9e82' : '#e07070', fontSize: '.88rem' }}>
+              <p style={{ margin: 0, fontWeight: 500 }}>{status.text}</p>
+              {status.details && status.details.length > 0 && (
+                <ul style={{ marginTop: '.3rem', paddingLeft: '1.2rem', margin: 0, listStyleType: 'disc' }}>
+                  {status.details.map((detail, idx) => (
+                    <li key={idx} style={{ marginTop: '.2rem' }}>
+                      {detail}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           )}
         </div>
       </div>
